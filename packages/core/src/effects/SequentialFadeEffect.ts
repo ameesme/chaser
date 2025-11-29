@@ -51,8 +51,21 @@ export class SequentialFadeEffect extends BaseEffect {
     const panelGrid = context.panelGrid as any;
     const elapsed = this.getElapsedSinceStart(context);
     const targetBrightness = (context.params.brightness as number) ?? this.defaultParams.brightness;
-    const delayBetweenPanels = (context.params.delayBetweenPanels as number) ?? this.defaultParams.delayBetweenPanels;
-    const fadeDuration = (context.params.fadeDuration as number) ?? this.defaultParams.fadeDuration;
+
+    // Use transitionDuration if provided, otherwise use individual timing params
+    const transitionDuration = context.params.transitionDuration as number;
+    let delayBetweenPanels: number;
+    let fadeDuration: number;
+
+    if (transitionDuration !== undefined) {
+      // Split the transition duration: 70% for fading, 30% for delays
+      const totalPanels = panelGrid.getPanelCount();
+      delayBetweenPanels = (transitionDuration * 0.3) / totalPanels;
+      fadeDuration = transitionDuration * 0.7;
+    } else {
+      delayBetweenPanels = (context.params.delayBetweenPanels as number) ?? this.defaultParams.delayBetweenPanels;
+      fadeDuration = (context.params.fadeDuration as number) ?? this.defaultParams.fadeDuration;
+    }
 
     // Get the sequences based on current topology
     const topology = panelGrid.getTopology();

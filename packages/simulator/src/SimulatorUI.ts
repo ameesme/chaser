@@ -1,5 +1,5 @@
 import type { Engine } from '@chaser/core';
-import { SolidColorEffect, FlowEffect, SequentialFadeEffect } from '@chaser/core';
+import { SolidColorEffect, FlowEffect, SequentialFadeEffect, StrobeEffect } from '@chaser/core';
 
 /**
  * Simulator UI controls
@@ -25,6 +25,7 @@ export class SimulatorUI {
         <button id="btn-solid">Solid Color</button>
         <button id="btn-sequential">Sequential Fade</button>
         <button id="btn-flow">Flow</button>
+        <button id="btn-strobe">Strobe</button>
       </div>
 
       <div class="control-group">
@@ -116,6 +117,7 @@ export class SimulatorUI {
     const solidBtn = document.getElementById('btn-solid');
     const sequentialBtn = document.getElementById('btn-sequential');
     const flowBtn = document.getElementById('btn-flow');
+    const strobeBtn = document.getElementById('btn-strobe');
     const stopBtn = document.getElementById('btn-stop');
 
     solidBtn?.addEventListener('click', () => {
@@ -133,6 +135,12 @@ export class SimulatorUI {
     flowBtn?.addEventListener('click', () => {
       this.updateCustomColorPreset();
       const effect = new FlowEffect();
+      this.engine.runEffect(effect, this.getCurrentParams());
+    });
+
+    strobeBtn?.addEventListener('click', () => {
+      this.updateCustomColorPreset();
+      const effect = new StrobeEffect();
       this.engine.runEffect(effect, this.getCurrentParams());
     });
 
