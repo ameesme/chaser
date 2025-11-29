@@ -49,7 +49,32 @@ export class SimulatorUI {
           <option value="ocean">Ocean</option>
           <option value="sunset">Sunset</option>
           <option value="fire">Fire</option>
+          <option value="custom">Custom Color</option>
         </select>
+      </div>
+
+      <div class="control-group" id="custom-color-group" style="display: none;">
+        <h3>Custom Color (RGBCCT)</h3>
+        <div class="slider-container">
+          <div class="slider-label">
+            <span>RGB Color</span>
+          </div>
+          <input type="color" id="rgb-color" value="#ff0000">
+        </div>
+        <div class="slider-container">
+          <div class="slider-label">
+            <span>Cool White</span>
+            <span class="slider-value" id="cool-white-value">0</span>
+          </div>
+          <input type="range" id="cool-white" min="0" max="255" value="0">
+        </div>
+        <div class="slider-container">
+          <div class="slider-label">
+            <span>Warm White</span>
+            <span class="slider-value" id="warm-white-value">0</span>
+          </div>
+          <input type="range" id="warm-white" min="0" max="255" value="0">
+        </div>
       </div>
 
       <div class="control-group">
@@ -87,22 +112,34 @@ export class SimulatorUI {
     const stopBtn = document.getElementById('btn-stop');
 
     solidBtn?.addEventListener('click', () => {
+      this.updateCustomColorPreset();
       const effect = new SolidColorEffect();
       this.engine.runEffect(effect, this.getCurrentParams());
     });
 
     chaseBtn?.addEventListener('click', () => {
+      this.updateCustomColorPreset();
       const effect = new ChaseEffect();
       this.engine.runEffect(effect, this.getCurrentParams());
     });
 
     waveBtn?.addEventListener('click', () => {
+      this.updateCustomColorPreset();
       const effect = new WaveEffect();
       this.engine.runEffect(effect, this.getCurrentParams());
     });
 
     stopBtn?.addEventListener('click', () => {
       this.engine.stopCurrentEffect();
+    });
+
+    // Color preset selector
+    const colorPresetSelect = document.getElementById('color-preset') as HTMLSelectElement;
+    colorPresetSelect?.addEventListener('change', () => {
+      const customGroup = document.getElementById('custom-color-group');
+      if (customGroup) {
+        customGroup.style.display = colorPresetSelect.value === 'custom' ? 'block' : 'none';
+      }
     });
 
     // Topology mode
@@ -132,6 +169,56 @@ export class SimulatorUI {
       if (speedValue) {
         speedValue.textContent = `${value.toFixed(1)}x`;
       }
+    });
+
+    // Cool white slider
+    const coolWhiteSlider = document.getElementById('cool-white') as HTMLInputElement;
+    const coolWhiteValue = document.getElementById('cool-white-value');
+    coolWhiteSlider?.addEventListener('input', () => {
+      if (coolWhiteValue) {
+        coolWhiteValue.textContent = coolWhiteSlider.value;
+      }
+    });
+
+    // Warm white slider
+    const warmWhiteSlider = document.getElementById('warm-white') as HTMLInputElement;
+    const warmWhiteValue = document.getElementById('warm-white-value');
+    warmWhiteSlider?.addEventListener('input', () => {
+      if (warmWhiteValue) {
+        warmWhiteValue.textContent = warmWhiteSlider.value;
+      }
+    });
+  }
+
+  /**
+   * Update custom color preset from UI values
+   */
+  private updateCustomColorPreset(): void {
+    const colorPresetSelect = (document.getElementById('color-preset') as HTMLSelectElement);
+    if (colorPresetSelect.value !== 'custom') {
+      return;
+    }
+
+    // Get color picker value
+    const rgbColorInput = document.getElementById('rgb-color') as HTMLInputElement;
+    const coolWhiteInput = document.getElementById('cool-white') as HTMLInputElement;
+    const warmWhiteInput = document.getElementById('warm-white') as HTMLInputElement;
+
+    // Parse hex color to RGB
+    const hex = rgbColorInput.value;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+
+    // Get CCT values
+    const cool = parseInt(coolWhiteInput.value);
+    const warm = parseInt(warmWhiteInput.value);
+
+    // Create and register custom preset
+    const colorManager = this.engine.getColorManager();
+    colorManager.addPreset('custom', {
+      type: 'solid',
+      solid: { r, g, b, cool, warm }
     });
   }
 
