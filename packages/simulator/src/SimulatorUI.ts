@@ -92,7 +92,7 @@ export class SimulatorUI {
             <span>Duration (ms)</span>
             <span class="slider-value" id="duration-value">1000ms</span>
           </div>
-          <input type="range" id="duration" min="100" max="5000" value="1000" step="100">
+          <input type="range" id="duration" min="100" max="20000" value="1000" step="100">
         </div>
         <div class="slider-container">
           <div class="slider-label">
