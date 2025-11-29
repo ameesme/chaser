@@ -9,7 +9,7 @@ export { Engine } from './Engine.js';
 export { EffectRunner } from './EffectRunner.js';
 
 // Effects
-export { BaseEffect, SolidColorEffect, ChaseEffect, WaveEffect } from './effects/index.js';
+export { BaseEffect, SolidColorEffect, ChaseEffect, WaveEffect, SequentialFadeEffect } from './effects/index.js';
 
 // Re-export types for convenience
 export type {
