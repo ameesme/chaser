@@ -155,6 +155,8 @@ class ChaserServer {
   private async handleRunEffect(payload: any): Promise<void> {
     const { effectName, params } = payload;
 
+    console.log(`🎬 Running effect: ${effectName}`, params);
+
     // Map effect name to effect class
     const effectModule = await import('@chaser/core');
     const effectMap: Record<string, any> = {
