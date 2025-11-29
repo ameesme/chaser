@@ -8,11 +8,11 @@
   "presets": {
     "white": {
       "type": "solid",
-      "solid": { "r": 255, "g": 255, "b": 255, "cool": 255, "warm": 0 }
+      "solid": { "r": 0, "g": 0, "b": 0, "cool": 255, "warm": 0 }
     },
     "warm": {
       "type": "solid",
-      "solid": { "r": 255, "g": 230, "b": 200, "cool": 0, "warm": 255 }
+      "solid": { "r": 0, "g": 0, "b": 0, "cool": 0, "warm": 255 }
     },
     "rainbow": {
       "type": "gradient",

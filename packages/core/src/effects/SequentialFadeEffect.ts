@@ -44,13 +44,12 @@ export class SequentialFadeEffect extends BaseEffect {
     const panelGrid = context.panelGrid as any;
     const elapsed = this.getElapsedSinceStart(context);
     const targetBrightness = (context.params.brightness as number) ?? this.defaultParams.brightness;
-    const delayBetweenPanels = (context.params.delayBetweenPanels as number) ?? this.defaultParams.delayBetweenPanels;
-    const fadeDuration = (context.params.fadeDuration as number) ?? this.defaultParams.fadeDuration;
+    const speed = (context.params.speed as number) ?? 1.0;
+    const delayBetweenPanels = ((context.params.delayBetweenPanels as number) ?? this.defaultParams.delayBetweenPanels) / speed;
+    const fadeDuration = ((context.params.fadeDuration as number) ?? this.defaultParams.fadeDuration) / speed;
 
-    // Get the sequence based on current topology
+    // Get the sequences based on current topology
     const topology = panelGrid.getTopology();
-    const sequence = topology.sequences[0]; // Use first sequence (circular or first column)
-
     const color = this.targetColor || { r: 255, g: 255, b: 255, cool: 255, warm: 0 };
     const states: PanelState[] = new Array(panelGrid.getPanelCount());
 
@@ -62,28 +61,31 @@ export class SequentialFadeEffect extends BaseEffect {
     // Calculate which panels should be fading and their progress
     let allComplete = true;
 
-    sequence.forEach((panelIndex: number, seqIndex: number) => {
-      // Calculate when this panel should start fading
-      const panelStartTime = seqIndex * delayBetweenPanels;
+    // Process all sequences (for linear mode, this handles both columns)
+    topology.sequences.forEach((sequence: number[]) => {
+      sequence.forEach((panelIndex: number, seqIndex: number) => {
+        // Calculate when this panel should start fading
+        const panelStartTime = seqIndex * delayBetweenPanels;
 
-      if (elapsed >= panelStartTime) {
-        // This panel has started fading
-        const panelElapsed = elapsed - panelStartTime;
-        const progress = Math.min(panelElapsed / fadeDuration, 1.0);
+        if (elapsed >= panelStartTime) {
+          // This panel has started fading
+          const panelElapsed = elapsed - panelStartTime;
+          const progress = Math.min(panelElapsed / fadeDuration, 1.0);
 
-        // Apply easing
-        const easedProgress = this.easeOut(progress);
-        const brightness = targetBrightness * easedProgress;
+          // Apply easing
+          const easedProgress = this.easeOut(progress);
+          const brightness = targetBrightness * easedProgress;
 
-        states[panelIndex] = this.createPanelState(color, brightness);
+          states[panelIndex] = this.createPanelState(color, brightness);
 
-        if (progress < 1.0) {
+          if (progress < 1.0) {
+            allComplete = false;
+          }
+        } else {
+          // This panel hasn't started yet
           allComplete = false;
         }
-      } else {
-        // This panel hasn't started yet
-        allComplete = false;
-      }
+      });
     });
 
     // Mark as done when all panels are fully faded in

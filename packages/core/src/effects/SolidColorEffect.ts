@@ -41,7 +41,9 @@ export class SolidColorEffect extends BaseEffect {
     }
 
     const elapsed = this.getElapsedSinceStart(context);
-    const duration = (context.params.transitionDuration as number) || this.defaultParams.transitionDuration;
+    const baseDuration = (context.params.transitionDuration as number) || this.defaultParams.transitionDuration;
+    const speed = (context.params.speed as number) ?? 1.0;
+    const duration = baseDuration / speed; // Speed up or slow down
     const targetBrightness = (context.params.brightness as number) ?? this.defaultParams.brightness;
 
     // Calculate progress (0-1)
