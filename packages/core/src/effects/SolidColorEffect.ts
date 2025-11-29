@@ -12,10 +12,12 @@ export class SolidColorEffect extends BaseEffect {
   readonly defaultParams = {
     colorPreset: 'white',
     brightness: 1.0,
-    transitionDuration: 1000 // ms to fade to target color
+    transitionDuration: 1000, // ms to fade to target color
+    startColor: null // null = fade from black, or specify RGBCCTColor
   };
 
   private targetColor: RGBCCTColor | null = null;
+  private startColor: RGBCCTColor = { r: 0, g: 0, b: 0, cool: 0, warm: 0 };
 
   initialize(context: EffectContext): void {
     super.initialize(context);
@@ -33,6 +35,11 @@ export class SolidColorEffect extends BaseEffect {
       // Default to white if preset not found
       this.targetColor = { r: 255, g: 255, b: 255, cool: 255, warm: 0 };
     }
+
+    // Get start color if provided
+    if (context.params.startColor) {
+      this.startColor = context.params.startColor as RGBCCTColor;
+    }
   }
 
   compute(context: EffectContext): PanelState[] {
@@ -41,9 +48,7 @@ export class SolidColorEffect extends BaseEffect {
     }
 
     const elapsed = this.getElapsedSinceStart(context);
-    const baseDuration = (context.params.transitionDuration as number) || this.defaultParams.transitionDuration;
-    const speed = (context.params.speed as number) ?? 1.0;
-    const duration = baseDuration / speed; // Speed up or slow down
+    const duration = (context.params.transitionDuration as number) || this.defaultParams.transitionDuration;
     const targetBrightness = (context.params.brightness as number) ?? this.defaultParams.brightness;
 
     // Calculate progress (0-1)
@@ -57,12 +62,18 @@ export class SolidColorEffect extends BaseEffect {
       this.done = true;
     }
 
-    // Create uniform states for all panels
-    const color = this.targetColor || { r: 255, g: 255, b: 255, cool: 255, warm: 0 };
-    const brightness = targetBrightness * easedProgress;
+    // Interpolate between start and target color
+    const targetColor = this.targetColor || { r: 255, g: 255, b: 255, cool: 255, warm: 0 };
+    const color = {
+      r: Math.round(this.startColor.r + (targetColor.r - this.startColor.r) * easedProgress),
+      g: Math.round(this.startColor.g + (targetColor.g - this.startColor.g) * easedProgress),
+      b: Math.round(this.startColor.b + (targetColor.b - this.startColor.b) * easedProgress),
+      cool: Math.round(this.startColor.cool + (targetColor.cool - this.startColor.cool) * easedProgress),
+      warm: Math.round(this.startColor.warm + (targetColor.warm - this.startColor.warm) * easedProgress)
+    };
 
     const panelCount = (context.panelGrid as any).getPanelCount();
-    return this.createUniformStates(panelCount, color, brightness);
+    return this.createUniformStates(panelCount, color, targetBrightness);
   }
 
   getProgress(): number {

@@ -13,10 +13,12 @@ export class SequentialFadeEffect extends BaseEffect {
     colorPreset: 'white',
     brightness: 1.0,
     delayBetweenPanels: 100,  // ms delay between each panel starting
-    fadeDuration: 500          // ms for each panel to fade in
+    fadeDuration: 500,        // ms for each panel to fade in
+    startColor: null          // null = fade from black, or specify RGBCCTColor
   };
 
   private targetColor: RGBCCTColor | null = null;
+  private startColor: RGBCCTColor = { r: 0, g: 0, b: 0, cool: 0, warm: 0 };
 
   initialize(context: EffectContext): void {
     super.initialize(context);
@@ -34,6 +36,11 @@ export class SequentialFadeEffect extends BaseEffect {
       // Default to white if preset not found
       this.targetColor = { r: 255, g: 255, b: 255, cool: 255, warm: 0 };
     }
+
+    // Get start color if provided
+    if (context.params.startColor) {
+      this.startColor = context.params.startColor as RGBCCTColor;
+    }
   }
 
   compute(context: EffectContext): PanelState[] {
@@ -44,18 +51,17 @@ export class SequentialFadeEffect extends BaseEffect {
     const panelGrid = context.panelGrid as any;
     const elapsed = this.getElapsedSinceStart(context);
     const targetBrightness = (context.params.brightness as number) ?? this.defaultParams.brightness;
-    const speed = (context.params.speed as number) ?? 1.0;
-    const delayBetweenPanels = ((context.params.delayBetweenPanels as number) ?? this.defaultParams.delayBetweenPanels) / speed;
-    const fadeDuration = ((context.params.fadeDuration as number) ?? this.defaultParams.fadeDuration) / speed;
+    const delayBetweenPanels = (context.params.delayBetweenPanels as number) ?? this.defaultParams.delayBetweenPanels;
+    const fadeDuration = (context.params.fadeDuration as number) ?? this.defaultParams.fadeDuration;
 
     // Get the sequences based on current topology
     const topology = panelGrid.getTopology();
-    const color = this.targetColor || { r: 255, g: 255, b: 255, cool: 255, warm: 0 };
+    const targetColor = this.targetColor || { r: 255, g: 255, b: 255, cool: 255, warm: 0 };
     const states: PanelState[] = new Array(panelGrid.getPanelCount());
 
-    // Initialize all panels to black
+    // Initialize all panels to start color
     for (let i = 0; i < states.length; i++) {
-      states[i] = this.createPanelState(color, 0);
+      states[i] = this.createPanelState(this.startColor, targetBrightness);
     }
 
     // Calculate which panels should be fading and their progress
@@ -74,9 +80,17 @@ export class SequentialFadeEffect extends BaseEffect {
 
           // Apply easing
           const easedProgress = this.easeOut(progress);
-          const brightness = targetBrightness * easedProgress;
 
-          states[panelIndex] = this.createPanelState(color, brightness);
+          // Interpolate between start and target color
+          const color = {
+            r: Math.round(this.startColor.r + (targetColor.r - this.startColor.r) * easedProgress),
+            g: Math.round(this.startColor.g + (targetColor.g - this.startColor.g) * easedProgress),
+            b: Math.round(this.startColor.b + (targetColor.b - this.startColor.b) * easedProgress),
+            cool: Math.round(this.startColor.cool + (targetColor.cool - this.startColor.cool) * easedProgress),
+            warm: Math.round(this.startColor.warm + (targetColor.warm - this.startColor.warm) * easedProgress)
+          };
+
+          states[panelIndex] = this.createPanelState(color, targetBrightness);
 
           if (progress < 1.0) {
             allComplete = false;

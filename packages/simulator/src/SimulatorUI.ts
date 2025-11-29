@@ -88,10 +88,10 @@ export class SimulatorUI {
         </div>
         <div class="slider-container">
           <div class="slider-label">
-            <span>Speed</span>
-            <span class="slider-value" id="speed-value">1.0x</span>
+            <span>Duration (ms)</span>
+            <span class="slider-value" id="duration-value">1000ms</span>
           </div>
-          <input type="range" id="speed" min="10" max="300" value="100">
+          <input type="range" id="duration" min="100" max="5000" value="1000" step="100">
         </div>
         <div class="slider-container">
           <div class="slider-label">
@@ -168,13 +168,13 @@ export class SimulatorUI {
       }
     });
 
-    // Speed slider
-    const speedSlider = document.getElementById('speed') as HTMLInputElement;
-    const speedValue = document.getElementById('speed-value');
-    speedSlider?.addEventListener('input', () => {
-      const value = parseInt(speedSlider.value) / 100;
-      if (speedValue) {
-        speedValue.textContent = `${value.toFixed(1)}x`;
+    // Duration slider
+    const durationSlider = document.getElementById('duration') as HTMLInputElement;
+    const durationValue = document.getElementById('duration-value');
+    durationSlider?.addEventListener('input', () => {
+      const value = parseInt(durationSlider.value);
+      if (durationValue) {
+        durationValue.textContent = `${value}ms`;
       }
     });
 
@@ -245,13 +245,13 @@ export class SimulatorUI {
   private getCurrentParams() {
     const colorPreset = (document.getElementById('color-preset') as HTMLSelectElement).value;
     const brightness = parseInt((document.getElementById('brightness') as HTMLInputElement).value) / 100;
-    const speed = parseInt((document.getElementById('speed') as HTMLInputElement).value) / 100;
+    const transitionDuration = parseInt((document.getElementById('duration') as HTMLInputElement).value);
     const scale = parseInt((document.getElementById('scale') as HTMLInputElement).value) / 100;
 
     return {
       colorPreset,
       brightness,
-      speed,
+      transitionDuration,
       scale
     };
   }
