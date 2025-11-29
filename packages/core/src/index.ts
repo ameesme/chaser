@@ -7,7 +7,9 @@ export { PanelGrid } from './PanelGrid.js';
 export { ColorManager } from './ColorManager.js';
 export { Engine } from './Engine.js';
 export { EffectRunner } from './EffectRunner.js';
-export { BaseEffect } from './effects/BaseEffect.js';
+
+// Effects
+export { BaseEffect, SolidColorEffect, ChaseEffect, WaveEffect } from './effects/index.js';
 
 // Re-export types for convenience
 export type {
