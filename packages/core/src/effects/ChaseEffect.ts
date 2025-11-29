@@ -5,6 +5,10 @@ import { BaseEffect } from './BaseEffect.js';
  * Chase effect - animated pattern traveling around circular loop
  * Type: Continuous (loops forever)
  * Mode: Circular (uses circular topology)
+ *
+ * Supports two modes:
+ * - Full Gradient (fullGradient=true): Shows complete gradient across all panels, rotating
+ * - Chase Pattern (fullGradient=false): Gradient with brightness falloff creating chase effect
  */
 export class ChaseEffect extends BaseEffect {
   readonly name = 'chase';
@@ -13,7 +17,8 @@ export class ChaseEffect extends BaseEffect {
     colorPreset: 'rainbow',
     speed: 1.0,              // Revolutions per second
     brightness: 1.0,
-    chaseLength: 3           // Number of panels in bright zone
+    chaseLength: 3,          // Number of panels in bright zone
+    fullGradient: true       // If true, show full gradient; if false, use chase pattern
   };
 
   compute(context: EffectContext): PanelState[] {
@@ -29,6 +34,7 @@ export class ChaseEffect extends BaseEffect {
     const speed = (context.params.speed as number) ?? this.defaultParams.speed;
     const targetBrightness = (context.params.brightness as number) ?? this.defaultParams.brightness;
     const chaseLength = (context.params.chaseLength as number) ?? this.defaultParams.chaseLength;
+    const fullGradient = (context.params.fullGradient as boolean) ?? this.defaultParams.fullGradient;
 
     // Get preset
     const preset = colorManager.getPreset(presetName);
@@ -67,13 +73,19 @@ export class ChaseEffect extends BaseEffect {
       // Sample gradient at this offset
       const color = colorManager.interpolateGradient(gradient, offset);
 
-      // Calculate brightness falloff based on distance from chase head
-      // Chase head is at offset ~0
-      const distanceFromHead = Math.min(offset, 1 - offset);
-      const falloffRange = chaseLength / sequence.length;
-      const brightness = distanceFromHead < falloffRange
-        ? (1 - distanceFromHead / falloffRange) * targetBrightness
-        : 0;
+      let brightness: number;
+
+      if (fullGradient) {
+        // Full gradient mode: show gradient across all panels at full brightness
+        brightness = targetBrightness;
+      } else {
+        // Chase mode: brightness falloff based on distance from chase head
+        const distanceFromHead = Math.min(offset, 1 - offset);
+        const falloffRange = chaseLength / sequence.length;
+        brightness = distanceFromHead < falloffRange
+          ? (1 - distanceFromHead / falloffRange) * targetBrightness
+          : 0;
+      }
 
       states[panelIndex] = this.createPanelState(color, brightness);
     });
