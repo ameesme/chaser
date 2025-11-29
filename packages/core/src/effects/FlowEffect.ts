@@ -19,7 +19,8 @@ export class FlowEffect extends BaseEffect {
     brightness: 1.0,
     mode: 'full',            // 'full' or 'chase'
     chaseLength: 3,          // Panels in bright zone (chase mode only)
-    waveHeight: 0.0          // Brightness wave modulation (0 = none, 0.5 = moderate)
+    waveHeight: 0.0,         // Brightness wave modulation (0 = none, 0.5 = moderate)
+    scale: 3.0               // Gradient scale - how many times gradient repeats across panels
   };
 
   compute(context: EffectContext): PanelState[] {
@@ -37,6 +38,7 @@ export class FlowEffect extends BaseEffect {
     const mode = (context.params.mode as string) || this.defaultParams.mode;
     const chaseLength = (context.params.chaseLength as number) ?? this.defaultParams.chaseLength;
     const waveHeight = (context.params.waveHeight as number) ?? this.defaultParams.waveHeight;
+    const scale = (context.params.scale as number) ?? this.defaultParams.scale;
 
     // Get preset
     const preset = colorManager.getPreset(presetName);
@@ -91,8 +93,9 @@ export class FlowEffect extends BaseEffect {
         // Calculate position in sequence (0-1)
         const normalizedPosition = seqIndex / sequence.length;
 
-        // Calculate gradient position with time offset
-        const gradientPosition = (normalizedPosition + timeOffset) % 1.0;
+        // Calculate gradient position with scale and time offset
+        // Scale > 1 means gradient repeats multiple times across panels
+        const gradientPosition = (normalizedPosition * scale + timeOffset) % 1.0;
 
         // Sample gradient at this position
         const color = colorManager.interpolateGradient(gradient, gradientPosition);

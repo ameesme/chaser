@@ -93,6 +93,13 @@ export class SimulatorUI {
           </div>
           <input type="range" id="speed" min="10" max="300" value="100">
         </div>
+        <div class="slider-container">
+          <div class="slider-label">
+            <span>Gradient Scale</span>
+            <span class="slider-value" id="scale-value">3.0x</span>
+          </div>
+          <input type="range" id="scale" min="10" max="100" value="30">
+        </div>
       </div>
 
       <div class="control-group">
@@ -171,6 +178,16 @@ export class SimulatorUI {
       }
     });
 
+    // Scale slider
+    const scaleSlider = document.getElementById('scale') as HTMLInputElement;
+    const scaleValue = document.getElementById('scale-value');
+    scaleSlider?.addEventListener('input', () => {
+      const value = parseInt(scaleSlider.value) / 10;
+      if (scaleValue) {
+        scaleValue.textContent = `${value.toFixed(1)}x`;
+      }
+    });
+
     // Cool white slider
     const coolWhiteSlider = document.getElementById('cool-white') as HTMLInputElement;
     const coolWhiteValue = document.getElementById('cool-white-value');
@@ -229,11 +246,13 @@ export class SimulatorUI {
     const colorPreset = (document.getElementById('color-preset') as HTMLSelectElement).value;
     const brightness = parseInt((document.getElementById('brightness') as HTMLInputElement).value) / 100;
     const speed = parseInt((document.getElementById('speed') as HTMLInputElement).value) / 100;
+    const scale = parseInt((document.getElementById('scale') as HTMLInputElement).value) / 10;
 
     return {
       colorPreset,
       brightness,
-      speed
+      speed,
+      scale
     };
   }
 
