@@ -20,7 +20,7 @@ export class FlowEffect extends BaseEffect {
     mode: 'full',            // 'full' or 'chase'
     chaseLength: 3,          // Panels in bright zone (chase mode only)
     waveHeight: 0.0,         // Brightness wave modulation (0 = none, 0.5 = moderate)
-    scale: 3.0               // Gradient scale - how many times gradient repeats across panels
+    scale: 0.2               // Gradient scale - fraction of gradient shown (0.1 = 10%, negative reverses)
   };
 
   compute(context: EffectContext): PanelState[] {
@@ -94,8 +94,15 @@ export class FlowEffect extends BaseEffect {
         const normalizedPosition = seqIndex / sequence.length;
 
         // Calculate gradient position with scale and time offset
-        // Scale > 1 means gradient repeats multiple times across panels
-        const gradientPosition = (normalizedPosition * scale + timeOffset) % 1.0;
+        // Scale < 1 shows portion of gradient (higher resolution)
+        // Scale = 1 shows full gradient
+        // Negative scale reverses direction
+        let gradientPosition = (normalizedPosition * scale + timeOffset) % 1.0;
+
+        // Handle negative modulo for reverse direction
+        if (gradientPosition < 0) {
+          gradientPosition += 1.0;
+        }
 
         // Sample gradient at this position
         const color = colorManager.interpolateGradient(gradient, gradientPosition);
