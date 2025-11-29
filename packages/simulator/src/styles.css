@@ -182,6 +182,73 @@ input[type="color"]::-webkit-color-swatch {
   font-weight: 600;
 }
 
+/* Gradient Editor */
+.gradient-preview-container {
+  margin-bottom: 20px;
+}
+
+.gradient-preview {
+  width: 100%;
+  height: 60px;
+  border-radius: 4px;
+  border: 2px solid #3a3a3a;
+  background: linear-gradient(to right, #ff0000, #0000ff);
+}
+
+#gradient-stops-container {
+  margin-top: 20px;
+}
+
+#gradient-stops-container h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 15px;
+  letter-spacing: 0.5px;
+}
+
+#gradient-stops-list {
+  margin-bottom: 15px;
+}
+
+.gradient-stop {
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.stop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.stop-header span {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #3a7ca5;
+}
+
+button.small {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  margin-bottom: 0;
+}
+
+.btn-remove-stop {
+  background: #c53030;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+
+.btn-remove-stop:hover {
+  background: #d53040;
+}
+
 @media (max-width: 1024px) {
   main {
     grid-template-columns: 1fr;

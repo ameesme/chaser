@@ -99,10 +99,24 @@
           { "position": 1.0, "color": { "r": 255, "g": 0, "b": 0, "cool": 0, "warm": 100 } }
         ]
       }
+    },
+    "breathe": {
+      "type": "gradient",
+      "gradient": {
+        "colorSpace": "rgb",
+        "stops": [
+          { "position": 0.0, "color": { "r": 0, "g": 0, "b": 0, "cool": 0, "warm": 0 } },
+          { "position": 0.5, "color": { "r": 255, "g": 255, "b": 255, "cool": 255, "warm": 0 } },
+          { "position": 1.0, "color": { "r": 0, "g": 0, "b": 0, "cool": 0, "warm": 0 } }
+        ]
+      }
     }
   },
   "simulator": {
     "port": 3000,
     "panelScale": 2
+  },
+  "server": {
+    "port": 3001
   }
 }

@@ -1,4 +1,4 @@
-import { Engine } from '@chaser/core';
+import { WebSocketClient } from './WebSocketClient.js';
 import { CanvasRenderer } from './CanvasRenderer.js';
 import { SimulatorUI } from './SimulatorUI.js';
 
@@ -9,17 +9,9 @@ async function main() {
   // Load config
   const config = await loadConfig();
 
-  // Initialize engine
-  const engine = new Engine({
-    columns: config.engine.columns,
-    rowsPerColumn: config.engine.rowsPerColumn,
-    targetFPS: config.engine.targetFPS,
-    initialTopology: config.engine.initialTopology as any
-  });
-
-  // Load color presets
-  const colorManager = engine.getColorManager();
-  colorManager.loadPresetsFromConfig(config.presets);
+  // Create WebSocket client
+  const serverUrl = `ws://localhost:${config.server?.port || 3001}`;
+  const client = new WebSocketClient(serverUrl);
 
   // Setup canvas renderer
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -29,7 +21,11 @@ async function main() {
 
   const scale = config.simulator?.panelScale || 2;
   const renderer = new CanvasRenderer(canvas, scale);
-  engine.addOutput(renderer);
+
+  // Connect to server
+  console.log('🔌 Connecting to server...');
+  await client.connect();
+  console.log('✅ Connected to server');
 
   // Setup UI
   const controlsContainer = document.getElementById('controls') as HTMLElement;
@@ -37,19 +33,32 @@ async function main() {
     throw new Error('Controls container not found');
   }
 
-  const ui = new SimulatorUI(engine, controlsContainer);
+  const ui = new SimulatorUI(client, controlsContainer);
 
-  // Start engine
-  engine.start();
+  // Handle state updates from server
+  client.onStateUpdate((panels, currentEffect) => {
+    // Render panels on canvas
+    renderer.render(panels, {} as any); // topology not needed for rendering
 
-  // Update status display
-  setInterval(() => {
-    const state = engine.getState();
-    ui.updateStatus(state.fps, state.currentEffect);
-  }, 100);
+    // Update status display
+    const fps = 60; // Approximate FPS
+    ui.updateStatus(fps, currentEffect);
+  });
+
+  // Handle connection events
+  client.onConnected(() => {
+    console.log('✅ Connected to server');
+  });
+
+  client.onDisconnected(() => {
+    console.warn('⚠️ Disconnected from server, attempting reconnect...');
+  });
+
+  client.onError((error) => {
+    console.error('❌ Error:', error);
+  });
 
   console.log('Chaser simulator initialized');
-  console.log(`Loaded ${colorManager.listPresets().length} color presets:`, colorManager.listPresets());
 }
 
 /**
