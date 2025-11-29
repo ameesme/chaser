@@ -17,15 +17,15 @@
     "rainbow": {
       "type": "gradient",
       "gradient": {
-        "colorSpace": "hsv",
+        "colorSpace": "rgb",
         "stops": [
           { "position": 0.0, "color": { "r": 255, "g": 0, "b": 0, "cool": 0, "warm": 0 } },
-          { "position": 0.15, "color": { "r": 255, "g": 127, "b": 0, "cool": 0, "warm": 0 } },
-          { "position": 0.30, "color": { "r": 255, "g": 255, "b": 0, "cool": 0, "warm": 0 } },
-          { "position": 0.45, "color": { "r": 0, "g": 255, "b": 0, "cool": 0, "warm": 0 } },
-          { "position": 0.60, "color": { "r": 0, "g": 0, "b": 255, "cool": 0, "warm": 0 } },
-          { "position": 0.75, "color": { "r": 75, "g": 0, "b": 130, "cool": 0, "warm": 0 } },
-          { "position": 0.90, "color": { "r": 148, "g": 0, "b": 211, "cool": 0, "warm": 0 } },
+          { "position": 0.14, "color": { "r": 255, "g": 127, "b": 0, "cool": 0, "warm": 0 } },
+          { "position": 0.29, "color": { "r": 255, "g": 255, "b": 0, "cool": 0, "warm": 0 } },
+          { "position": 0.43, "color": { "r": 0, "g": 255, "b": 0, "cool": 0, "warm": 0 } },
+          { "position": 0.57, "color": { "r": 0, "g": 127, "b": 255, "cool": 0, "warm": 0 } },
+          { "position": 0.71, "color": { "r": 0, "g": 0, "b": 255, "cool": 0, "warm": 0 } },
+          { "position": 0.86, "color": { "r": 139, "g": 0, "b": 255, "cool": 0, "warm": 0 } },
           { "position": 1.0, "color": { "r": 255, "g": 0, "b": 0, "cool": 0, "warm": 0 } }
         ]
       }
