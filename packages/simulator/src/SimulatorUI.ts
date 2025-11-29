@@ -253,13 +253,18 @@ export class SimulatorUI {
   private getCurrentParams() {
     const colorPreset = (document.getElementById('color-preset') as HTMLSelectElement).value;
     const brightness = parseInt((document.getElementById('brightness') as HTMLInputElement).value) / 100;
-    const transitionDuration = parseInt((document.getElementById('duration') as HTMLInputElement).value);
+    const duration = parseInt((document.getElementById('duration') as HTMLInputElement).value);
     const scale = parseInt((document.getElementById('scale') as HTMLInputElement).value) / 100;
+
+    // Map duration to both transitionDuration (one-shot effects) and speed (continuous effects)
+    // For continuous effects: higher duration = slower animation
+    const speed = 1000 / duration; // Convert ms to speed multiplier
 
     return {
       colorPreset,
       brightness,
-      transitionDuration,
+      transitionDuration: duration,
+      speed,
       scale
     };
   }
