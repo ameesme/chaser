@@ -5,6 +5,9 @@
 
 export { PanelGrid } from './PanelGrid.js';
 export { ColorManager } from './ColorManager.js';
+export { Engine } from './Engine.js';
+export { EffectRunner } from './EffectRunner.js';
+export { BaseEffect } from './effects/BaseEffect.js';
 
 // Re-export types for convenience
 export type {
@@ -18,5 +21,8 @@ export type {
   Gradient,
   Effect,
   EffectContext,
-  EffectParams
+  EffectParams,
+  EngineConfig,
+  EngineState,
+  EngineOutput
 } from '@chaser/types';
