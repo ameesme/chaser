@@ -25,7 +25,7 @@
           { "position": 0.5, "color": { "r": 0, "g": 255, "b": 0, "cool": 0, "warm": 0 } },
           { "position": 0.67, "color": { "r": 0, "g": 0, "b": 255, "cool": 0, "warm": 0 } },
           { "position": 0.83, "color": { "r": 75, "g": 0, "b": 130, "cool": 0, "warm": 0 } },
-          { "position": 1.0, "color": { "r": 238, "g": 130, "b": 238, "cool": 0, "warm": 0 } }
+          { "position": 1.0, "color": { "r": 255, "g": 0, "b": 0, "cool": 0, "warm": 0 } }
         ]
       }
     },
@@ -36,7 +36,7 @@
         "stops": [
           { "position": 0.0, "color": { "r": 0, "g": 50, "b": 100, "cool": 0, "warm": 0 } },
           { "position": 0.5, "color": { "r": 0, "g": 150, "b": 200, "cool": 50, "warm": 0 } },
-          { "position": 1.0, "color": { "r": 0, "g": 200, "b": 150, "cool": 0, "warm": 0 } }
+          { "position": 1.0, "color": { "r": 0, "g": 50, "b": 100, "cool": 0, "warm": 0 } }
         ]
       }
     },
@@ -47,7 +47,7 @@
         "stops": [
           { "position": 0.0, "color": { "r": 255, "g": 100, "b": 0, "cool": 0, "warm": 200 } },
           { "position": 0.5, "color": { "r": 255, "g": 50, "b": 100, "cool": 0, "warm": 150 } },
-          { "position": 1.0, "color": { "r": 100, "g": 0, "b": 100, "cool": 0, "warm": 0 } }
+          { "position": 1.0, "color": { "r": 255, "g": 100, "b": 0, "cool": 0, "warm": 200 } }
         ]
       }
     },
@@ -58,7 +58,7 @@
         "stops": [
           { "position": 0.0, "color": { "r": 255, "g": 0, "b": 0, "cool": 0, "warm": 100 } },
           { "position": 0.5, "color": { "r": 255, "g": 100, "b": 0, "cool": 0, "warm": 200 } },
-          { "position": 1.0, "color": { "r": 255, "g": 200, "b": 0, "cool": 0, "warm": 150 } }
+          { "position": 1.0, "color": { "r": 255, "g": 0, "b": 0, "cool": 0, "warm": 100 } }
         ]
       }
     }

@@ -1,4 +1,4 @@
-import type { EffectContext, PanelState, RGBCCTColor } from '@chaser/types';
+import type { EffectContext, PanelState, RGBCCTColor, Gradient } from '@chaser/types';
 import { BaseEffect } from './BaseEffect.js';
 
 /**
@@ -32,15 +32,16 @@ export class WaveEffect extends BaseEffect {
     const waveHeight = (context.params.waveHeight as number) ?? this.defaultParams.waveHeight;
     const waveLength = (context.params.waveLength as number) ?? this.defaultParams.waveLength;
 
-    // Get base color from preset
+    // Get color from preset
     const preset = colorManager.getPreset(presetName);
-    let baseColor: RGBCCTColor;
+    let baseColor: RGBCCTColor | null = null;
+    let gradient: Gradient | null = null;
 
     if (preset && preset.type === 'solid' && preset.solid) {
       baseColor = preset.solid;
     } else if (preset && preset.type === 'gradient' && preset.gradient) {
-      // Use middle of gradient
-      baseColor = colorManager.interpolateGradient(preset.gradient, 0.5);
+      // Use gradient mode
+      gradient = preset.gradient;
     } else {
       // Default to blue
       baseColor = { r: 0, g: 100, b: 200, cool: 0, warm: 0 };
@@ -53,14 +54,28 @@ export class WaveEffect extends BaseEffect {
     // Create panel states array
     const states: PanelState[] = new Array(panelGrid.getPanelCount());
 
+    // Calculate time offset for animation
+    const timeOffset = (elapsed / 1000) * speed;
+
     // Process each column independently
     sequences.forEach((columnIndices: number[]) => {
       columnIndices.forEach((panelIndex: number, rowIdx: number) => {
-        // Calculate wave position
+        // Calculate normalized position (0-1) down the column
         const normalizedRow = rowIdx / columnIndices.length;
+
+        // Get color from gradient or solid
+        let color: RGBCCTColor;
+        if (gradient) {
+          // Sample gradient based on position down column (with time offset for animation)
+          const gradientPosition = (normalizedRow + timeOffset) % 1.0;
+          color = colorManager.interpolateGradient(gradient, gradientPosition);
+        } else {
+          color = baseColor!;
+        }
+
+        // Calculate wave position for brightness modulation
         const phase = normalizedRow * Math.PI * 2 * waveLength;
-        const time = (elapsed / 1000) * speed;
-        const wave = Math.sin(phase + time * Math.PI * 2);
+        const wave = Math.sin(phase + timeOffset * Math.PI * 2);
 
         // Map wave (-1 to 1) to brightness
         // Base brightness + wave modulation
@@ -72,7 +87,7 @@ export class WaveEffect extends BaseEffect {
           1
         );
 
-        states[panelIndex] = this.createPanelState(baseColor, brightness);
+        states[panelIndex] = this.createPanelState(color, brightness);
       });
     });
 
