@@ -1,5 +1,5 @@
 import type { Engine } from '@chaser/core';
-import { SolidColorEffect, ChaseEffect, WaveEffect, SequentialFadeEffect } from '@chaser/core';
+import { SolidColorEffect, FlowEffect, SequentialFadeEffect } from '@chaser/core';
 
 /**
  * Simulator UI controls
@@ -24,8 +24,7 @@ export class SimulatorUI {
         <h3>Effects</h3>
         <button id="btn-solid">Solid Color</button>
         <button id="btn-sequential">Sequential Fade</button>
-        <button id="btn-chase">Chase</button>
-        <button id="btn-wave">Wave</button>
+        <button id="btn-flow">Flow</button>
       </div>
 
       <div class="control-group">
@@ -109,8 +108,7 @@ export class SimulatorUI {
     // Effect buttons
     const solidBtn = document.getElementById('btn-solid');
     const sequentialBtn = document.getElementById('btn-sequential');
-    const chaseBtn = document.getElementById('btn-chase');
-    const waveBtn = document.getElementById('btn-wave');
+    const flowBtn = document.getElementById('btn-flow');
     const stopBtn = document.getElementById('btn-stop');
 
     solidBtn?.addEventListener('click', () => {
@@ -125,15 +123,9 @@ export class SimulatorUI {
       this.engine.runEffect(effect, this.getCurrentParams());
     });
 
-    chaseBtn?.addEventListener('click', () => {
+    flowBtn?.addEventListener('click', () => {
       this.updateCustomColorPreset();
-      const effect = new ChaseEffect();
-      this.engine.runEffect(effect, this.getCurrentParams());
-    });
-
-    waveBtn?.addEventListener('click', () => {
-      this.updateCustomColorPreset();
-      const effect = new WaveEffect();
+      const effect = new FlowEffect();
       this.engine.runEffect(effect, this.getCurrentParams());
     });
 
