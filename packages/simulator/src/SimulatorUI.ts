@@ -82,6 +82,17 @@ export class SimulatorUI {
         </label>
       </div>
 
+      <div class="control-group" id="brightness-group" style="display: none;">
+        <h3>Brightness</h3>
+        <div class="slider-container">
+          <div class="slider-label">
+            <span>Master Brightness</span>
+            <span class="slider-value" id="brightness-value">100%</span>
+          </div>
+          <input type="range" id="brightness-slider" min="0" max="100" value="100" step="1">
+        </div>
+      </div>
+
       <!-- Solid Color Effect Parameters -->
       <div class="effect-params" id="params-solid" style="display: none;">
         <div class="control-group">
@@ -357,6 +368,14 @@ export class SimulatorUI {
       });
     });
 
+    // Brightness slider
+    const brightnessSlider = document.getElementById('brightness-slider') as HTMLInputElement;
+    brightnessSlider?.addEventListener('input', () => {
+      const value = document.getElementById('brightness-value');
+      if (value) value.textContent = `${brightnessSlider.value}%`;
+      this.runCurrentEffect();
+    });
+
     // Solid color effect
     this.attachSolidColorListeners();
 
@@ -389,6 +408,12 @@ export class SimulatorUI {
     const paramsDiv = document.getElementById(`params-${effect}`);
     if (paramsDiv) {
       paramsDiv.style.display = 'block';
+    }
+
+    // Show brightness control for all effects
+    const brightnessGroup = document.getElementById('brightness-group');
+    if (brightnessGroup) {
+      brightnessGroup.style.display = 'block';
     }
 
     // Auto-set topology to singular for effects that only work in singular mode
@@ -450,6 +475,20 @@ export class SimulatorUI {
     if (topologyGroup) {
       topologyGroup.style.display = 'none';
     }
+
+    // Hide brightness control when no effect is selected
+    const brightnessGroup = document.getElementById('brightness-group');
+    if (brightnessGroup) {
+      brightnessGroup.style.display = 'none';
+    }
+  }
+
+  /**
+   * Get the current brightness value (0-1)
+   */
+  private getBrightness(): number {
+    const brightnessSlider = document.getElementById('brightness-slider') as HTMLInputElement;
+    return parseFloat(brightnessSlider?.value || '100') / 100;
   }
 
   /**
@@ -529,6 +568,7 @@ export class SimulatorUI {
 
     const preset = presetSelect?.value;
     const duration = parseInt(durationInput?.value || '1000');
+    const brightness = this.getBrightness();
 
     if (preset === 'custom') {
       const rgbInput = document.getElementById('solid-rgb-color') as HTMLInputElement;
@@ -548,10 +588,10 @@ export class SimulatorUI {
         solid: { r, g, b, cool, warm }
       });
 
-      return { colorPreset: 'custom', duration };
+      return { colorPreset: 'custom', duration, brightness };
     }
 
-    return { colorPreset: preset || 'white', duration };
+    return { colorPreset: preset || 'white', duration, brightness };
   }
 
   // ===== SEQUENTIAL FADE EFFECT =====
@@ -610,6 +650,7 @@ export class SimulatorUI {
     const preset = presetSelect?.value;
     const delayBetweenPanels = parseInt(delayInput?.value || '100');
     const fadeDuration = parseInt(durationInput?.value || '500');
+    const brightness = this.getBrightness();
 
     if (preset === 'custom') {
       const rgbInput = document.getElementById('sequential-rgb-color') as HTMLInputElement;
@@ -628,10 +669,10 @@ export class SimulatorUI {
         solid: { r, g, b, cool, warm }
       });
 
-      return { colorPreset: 'sequential-custom', delayBetweenPanels, fadeDuration };
+      return { colorPreset: 'sequential-custom', delayBetweenPanels, fadeDuration, brightness };
     }
 
-    return { colorPreset: preset || 'white', delayBetweenPanels, fadeDuration };
+    return { colorPreset: preset || 'white', delayBetweenPanels, fadeDuration, brightness };
   }
 
   // ===== FLOW EFFECT =====
@@ -687,15 +728,16 @@ export class SimulatorUI {
     const preset = presetSelect?.value;
     const speed = parseFloat(speedInput?.value || '1.0');
     const scale = parseFloat(scaleInput?.value || '0.2');
+    const brightness = this.getBrightness();
 
-    console.log('Flow params:', { preset, speed, scale });
+    console.log('Flow params:', { preset, speed, scale, brightness });
 
     if (preset === 'custom') {
       this.applyCustomGradient('flow-custom');
-      return { colorPreset: 'flow-custom', speed, scale };
+      return { colorPreset: 'flow-custom', speed, scale, brightness };
     }
 
-    return { colorPreset: preset || 'rainbow', speed, scale };
+    return { colorPreset: preset || 'rainbow', speed, scale, brightness };
   }
 
   // ===== STROBE EFFECT =====
@@ -745,6 +787,7 @@ export class SimulatorUI {
 
     const preset = presetSelect?.value;
     const frequency = parseFloat(frequencyInput?.value || '5');
+    const brightness = this.getBrightness();
 
     if (preset === 'custom') {
       const rgbInput = document.getElementById('strobe-rgb-color') as HTMLInputElement;
@@ -763,10 +806,10 @@ export class SimulatorUI {
         solid: { r, g, b, cool, warm }
       });
 
-      return { colorPreset: 'strobe-custom', frequency };
+      return { colorPreset: 'strobe-custom', frequency, brightness };
     }
 
-    return { colorPreset: preset || 'white', frequency };
+    return { colorPreset: preset || 'white', frequency, brightness };
   }
 
   // ===== BLACKOUT EFFECT =====
