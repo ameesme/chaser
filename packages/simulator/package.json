@@ -1,0 +1,19 @@
+{
+  "name": "@chaser/simulator",
+  "version": "0.1.0",
+  "description": "Browser-based simulator for Chaser DMX effect engine",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@chaser/core": "workspace:*",
+    "@chaser/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  }
+}
