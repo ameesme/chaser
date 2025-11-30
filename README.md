@@ -2,6 +2,8 @@
 
 A real-time DMX LED panel effect engine with WebSocket-based architecture and retro-styled web simulator.
 
+![Chaser Interface](./docs/assets/chaser-demo.gif)
+
 ## Overview
 
 Chaser is a modular DMX lighting control system designed for managing RGBCCT LED panels. It features a powerful effect engine, WebSocket-based client-server architecture, and a retro black-and-white web interface for creating and previewing lighting effects in real-time.
