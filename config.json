@@ -118,5 +118,16 @@
   },
   "server": {
     "port": 3001
+  },
+  "artnet": {
+    "enabled": false,
+    "host": "192.168.1.100",
+    "port": 6454,
+    "universe": 0,
+    "subnet": 0,
+    "net": 0,
+    "startChannel": 1,
+    "channelsPerPanel": 5,
+    "refreshRate": 44
   }
 }

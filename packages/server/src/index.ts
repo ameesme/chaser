@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import type { EngineConfig } from '@chaser/types';
+import { ArtNetOutput, type ArtNetConfig } from './DMXOutput.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -39,6 +40,7 @@ class ChaserServer {
   private clients: Set<WebSocket> = new Set();
   private updateInterval: NodeJS.Timeout | null = null;
   private fullConfig: any;
+  private artnetOutput: ArtNetOutput | null = null;
 
   constructor(port: number = 3001) {
     // Store full config
@@ -50,6 +52,28 @@ class ChaserServer {
     // Load color presets
     const colorManager = this.engine.getColorManager();
     colorManager.loadPresetsFromConfig(fullConfig.presets);
+
+    // Initialize Art-Net output if configured
+    if (fullConfig.artnet) {
+      const artnetConfig: ArtNetConfig = {
+        enabled: fullConfig.artnet.enabled || false,
+        host: fullConfig.artnet.host || '192.168.1.100',
+        port: fullConfig.artnet.port || 6454,
+        universe: fullConfig.artnet.universe || 0,
+        subnet: fullConfig.artnet.subnet || 0,
+        net: fullConfig.artnet.net || 0,
+        startChannel: fullConfig.artnet.startChannel || 1,
+        channelsPerPanel: fullConfig.artnet.channelsPerPanel || 5,
+        refreshRate: fullConfig.artnet.refreshRate || 44
+      };
+
+      this.artnetOutput = new ArtNetOutput(artnetConfig);
+
+      // Add Art-Net output to engine
+      if (this.artnetOutput.isActive()) {
+        this.engine.addOutput(this.artnetOutput);
+      }
+    }
 
     // Create WebSocket server
     this.wss = new WebSocketServer({ port });
@@ -232,6 +256,11 @@ class ChaserServer {
 
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
+    }
+
+    // Close Art-Net connection
+    if (this.artnetOutput) {
+      this.artnetOutput.close();
     }
 
     this.clients.forEach(client => client.close());

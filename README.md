@@ -117,6 +117,17 @@ Configuration is loaded from `config.json` in the root directory. Example:
     "port": 3000,
     "panelScale": 1
   },
+  "artnet": {
+    "enabled": true,
+    "host": "192.168.1.100",
+    "port": 6454,
+    "universe": 0,
+    "subnet": 0,
+    "net": 0,
+    "startChannel": 1,
+    "channelsPerPanel": 5,
+    "refreshRate": 44
+  },
   "presets": {
     "white": {
       "type": "solid",
@@ -125,6 +136,46 @@ Configuration is loaded from `config.json` in the root directory. Example:
   }
 }
 ```
+
+### Art-Net DMX Output
+
+Chaser supports real-time DMX output via the Art-Net protocol (DMX over Ethernet). This allows you to control physical RGBCCT LED panels.
+
+#### Configuration Options
+
+- **enabled** - Enable/disable Art-Net output (default: `false`)
+- **host** - IP address of Art-Net node or `255.255.255.255` for broadcast
+- **port** - Art-Net port (default: `6454`)
+- **universe** - Art-Net universe 0-15 (default: `0`)
+- **subnet** - Art-Net subnet 0-15 (default: `0`)
+- **net** - Art-Net net 0-127 (default: `0`)
+- **startChannel** - First DMX channel for panel data (1-512, default: `1`)
+- **channelsPerPanel** - DMX channels per panel (default: `5` for RGBCCT)
+- **refreshRate** - Packet refresh rate in Hz (default: `44`)
+
+#### DMX Channel Mapping
+
+Each panel uses 5 consecutive DMX channels in RGBCCT order:
+
+- Channel 1: Red (0-255)
+- Channel 2: Green (0-255)
+- Channel 3: Blue (0-255)
+- Channel 4: Cool White (0-255)
+- Channel 5: Warm White (0-255)
+
+For 14 panels starting at channel 1:
+- Panel 0: Channels 1-5
+- Panel 1: Channels 6-10
+- Panel 2: Channels 11-15
+- ... and so on
+
+#### Setting Up Art-Net
+
+1. Connect your computer to the same network as your Art-Net node
+2. Update `config.json` with your Art-Net node's IP address
+3. Set `enabled: true` in the Art-Net configuration
+4. Start the server: `pnpm server`
+5. Effects will now output to both the web simulator and DMX hardware
 
 ## Usage
 
