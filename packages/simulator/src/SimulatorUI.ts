@@ -44,276 +44,65 @@ export class SimulatorUI {
   }
 
   /**
-   * Build UI controls
+   * Build UI controls with tab-based layout
    */
   private buildUI(): void {
     this.container.innerHTML = `
-      <div class="control-group">
-        <h3>Effect Presets</h3>
-        <select id="effect-preset-select">
-          <option value="">Select Preset...</option>
-        </select>
-        <div style="display: flex; gap: 8px; margin-top: 8px;">
-          <button id="btn-save-effect-preset" class="small" style="flex: 1;">Save Current</button>
-          <button id="btn-delete-effect-preset" class="small secondary" style="flex: 1;">Delete</button>
+      <!-- Effect Tabs -->
+      <div class="effect-tabs">
+        <button class="effect-tab" data-effect="solid">SOLID</button>
+        <button class="effect-tab" data-effect="sequential">SEQUENTIAL</button>
+        <button class="effect-tab" data-effect="flow">FLOW</button>
+        <button class="effect-tab" data-effect="strobe">STROBE</button>
+        <button class="effect-tab" data-effect="blackout">BLACKOUT</button>
+      </div>
+
+      <!-- Effect Parameters Container -->
+      <div class="effect-params-container">
+        <!-- Solid Color Effect Parameters -->
+        <div class="effect-params" id="params-solid">
+          ${this.buildSolidParams()}
+        </div>
+
+        <!-- Sequential Fade Effect Parameters -->
+        <div class="effect-params" id="params-sequential">
+          ${this.buildSequentialParams()}
+        </div>
+
+        <!-- Flow Effect Parameters -->
+        <div class="effect-params" id="params-flow">
+          ${this.buildFlowParams()}
+        </div>
+
+        <!-- Strobe Effect Parameters -->
+        <div class="effect-params" id="params-strobe">
+          ${this.buildStrobeParams()}
+        </div>
+
+        <!-- Blackout Effect Parameters -->
+        <div class="effect-params" id="params-blackout">
+          ${this.buildBlackoutParams()}
         </div>
       </div>
 
-      <div class="control-group">
-        <h3>Effects</h3>
-        <button id="btn-solid" data-effect="solid">Solid Color</button>
-        <button id="btn-sequential" data-effect="sequential">Sequential Fade</button>
-        <button id="btn-flow" data-effect="flow">Flow</button>
-        <button id="btn-strobe" data-effect="strobe">Strobe</button>
-        <button id="btn-blackout" data-effect="blackout" class="danger">Blackout</button>
-        <button id="btn-stop" class="secondary">Stop Effect</button>
-      </div>
-
-      <div class="control-group" id="topology-group" style="display: none;">
-        <h3>Topology Mode</h3>
-        <label>
-          <input type="radio" name="topology" value="circular" checked> Circular
-        </label>
-        <label>
-          <input type="radio" name="topology" value="linear"> Linear
-        </label>
-        <label>
-          <input type="radio" name="topology" value="singular"> Singular
-        </label>
-      </div>
-
-      <div class="control-group" id="brightness-group" style="display: none;">
-        <h3>Brightness</h3>
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>Master Brightness</span>
-            <span class="slider-value" id="brightness-value">100%</span>
-          </div>
-          <input type="range" id="brightness-slider" min="0" max="100" value="100" step="1">
+      <!-- Preset Bank -->
+      <div class="preset-bank">
+        <div class="preset-bank-header">
+          <div class="preset-bank-title">SAVED PRESETS</div>
         </div>
-      </div>
-
-      <!-- Solid Color Effect Parameters -->
-      <div class="effect-params" id="params-solid" style="display: none;">
-        <div class="control-group">
-          <h3>Solid Color</h3>
-          <select id="solid-preset" class="preset-select">
-            <option value="">Select Preset...</option>
-            <option value="white">White</option>
-            <option value="warm">Warm White</option>
-            <option value="custom">Custom Color</option>
-          </select>
-        </div>
-
-        <div class="control-group" id="solid-custom-group" style="display: none;">
-          <h3>Custom Color (RGBCCT)</h3>
-          <div class="slider-container">
-            <div class="slider-label"><span>RGB Color</span></div>
-            <input type="color" id="solid-rgb-color" value="#ff0000">
-          </div>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Cool White</span>
-              <span class="slider-value" id="solid-cool-value">0</span>
-            </div>
-            <input type="range" id="solid-cool" min="0" max="255" value="0">
-          </div>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Warm White</span>
-              <span class="slider-value" id="solid-warm-value">0</span>
-            </div>
-            <input type="range" id="solid-warm" min="0" max="255" value="0">
-          </div>
-        </div>
-
-        <div class="control-group">
-          <h3>Timing</h3>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Fade Duration (ms)</span>
-              <span class="slider-value" id="solid-duration-value">1000</span>
-            </div>
-            <input type="range" id="solid-duration" min="0" max="5000" value="1000" step="100">
-          </div>
-        </div>
-      </div>
-
-      <!-- Sequential Fade Effect Parameters -->
-      <div class="effect-params" id="params-sequential" style="display: none;">
-        <div class="control-group">
-          <h3>Target Color</h3>
-          <select id="sequential-preset" class="preset-select">
-            <option value="">Select Preset...</option>
-            <option value="white">White</option>
-            <option value="warm">Warm White</option>
-            <option value="custom">Custom Color</option>
-          </select>
-        </div>
-
-        <div class="control-group" id="sequential-custom-group" style="display: none;">
-          <h3>Custom Color (RGBCCT)</h3>
-          <div class="slider-container">
-            <div class="slider-label"><span>RGB Color</span></div>
-            <input type="color" id="sequential-rgb-color" value="#ff0000">
-          </div>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Cool White</span>
-              <span class="slider-value" id="sequential-cool-value">0</span>
-            </div>
-            <input type="range" id="sequential-cool" min="0" max="255" value="0">
-          </div>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Warm White</span>
-              <span class="slider-value" id="sequential-warm-value">0</span>
-            </div>
-            <input type="range" id="sequential-warm" min="0" max="255" value="0">
-          </div>
-        </div>
-
-        <div class="control-group">
-          <h3>Timing</h3>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Delay Between Panels (ms)</span>
-              <span class="slider-value" id="sequential-delay-value">100</span>
-            </div>
-            <input type="range" id="sequential-delay" min="10" max="500" value="100" step="10">
-          </div>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Fade Duration (ms)</span>
-              <span class="slider-value" id="sequential-duration-value">500</span>
-            </div>
-            <input type="range" id="sequential-duration" min="100" max="3000" value="500" step="50">
-          </div>
-        </div>
-      </div>
-
-      <!-- Flow Effect Parameters -->
-      <div class="effect-params" id="params-flow" style="display: none;">
-        <div class="control-group">
-          <h3>Gradient Preset</h3>
-          <select id="flow-preset" class="preset-select">
-            <option value="">Select Preset...</option>
-            <option value="rainbow">Rainbow</option>
-            <option value="ocean">Ocean</option>
-            <option value="sunset">Sunset</option>
-            <option value="fire">Fire</option>
-            <option value="breathe">Breathe</option>
-            <option value="custom">Custom Gradient</option>
-          </select>
-        </div>
-
-        <div class="control-group" id="flow-custom-group" style="display: none;">
-          <h3>Gradient Editor</h3>
-          <div class="gradient-preview-container">
-            <div id="flow-gradient-preview" class="gradient-preview"></div>
-          </div>
-          <div class="slider-container">
-            <div class="slider-label"><span>Color Space</span></div>
-            <select id="flow-colorspace">
-              <option value="rgb">RGB</option>
-              <option value="hsv">HSV</option>
-            </select>
-          </div>
-          <div id="flow-stops-container">
-            <h4>Gradient Stops</h4>
-            <div id="flow-stops-list"></div>
-            <button id="btn-flow-add-stop" class="small">Add Stop</button>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <h3>Animation</h3>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Speed</span>
-              <span class="slider-value" id="flow-speed-value">1.0</span>
-            </div>
-            <input type="range" id="flow-speed" min="0.1" max="10" value="1.0" step="0.1">
-          </div>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Gradient Scale</span>
-              <span class="slider-value" id="flow-scale-value">0.2</span>
-            </div>
-            <input type="range" id="flow-scale" min="-2" max="2" value="0.2" step="0.05">
-          </div>
-        </div>
-      </div>
-
-      <!-- Strobe Effect Parameters -->
-      <div class="effect-params" id="params-strobe" style="display: none;">
-        <div class="control-group">
-          <h3>Strobe Color</h3>
-          <select id="strobe-preset" class="preset-select">
-            <option value="">Select Preset...</option>
-            <option value="white">White</option>
-            <option value="warm">Warm White</option>
-            <option value="custom">Custom Color</option>
-          </select>
-        </div>
-
-        <div class="control-group" id="strobe-custom-group" style="display: none;">
-          <h3>Custom Color (RGBCCT)</h3>
-          <div class="slider-container">
-            <div class="slider-label"><span>RGB Color</span></div>
-            <input type="color" id="strobe-rgb-color" value="#ffffff">
-          </div>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Cool White</span>
-              <span class="slider-value" id="strobe-cool-value">0</span>
-            </div>
-            <input type="range" id="strobe-cool" min="0" max="255" value="0">
-          </div>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Warm White</span>
-              <span class="slider-value" id="strobe-warm-value">0</span>
-            </div>
-            <input type="range" id="strobe-warm" min="0" max="255" value="0">
-          </div>
-        </div>
-
-        <div class="control-group">
-          <h3>Timing</h3>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Frequency (Hz)</span>
-              <span class="slider-value" id="strobe-frequency-value">5</span>
-            </div>
-            <input type="range" id="strobe-frequency" min="0.5" max="30" value="5" step="0.5">
-          </div>
-        </div>
-      </div>
-
-      <!-- Blackout Effect Parameters -->
-      <div class="effect-params" id="params-blackout" style="display: none;">
-        <div class="control-group">
-          <h3>Transition</h3>
-          <div class="slider-container">
-            <div class="slider-label">
-              <span>Fade Duration (ms)</span>
-              <span class="slider-value" id="blackout-duration-value">0</span>
-            </div>
-            <input type="range" id="blackout-duration" min="0" max="5000" value="0" step="100">
-          </div>
-          <p style="font-size: 0.8rem; color: #888; margin-top: 8px;">Set to 0 for instant blackout</p>
+        <div class="preset-buttons" id="preset-buttons-container">
+          <!-- Preset buttons will be dynamically generated here -->
         </div>
       </div>
 
       <!-- Effect Preset Save Dialog -->
-      <div id="effect-preset-dialog" class="dialog" style="display: none;">
+      <div id="effect-preset-dialog" class="dialog">
         <div class="dialog-content">
-          <h3>Save Effect Preset</h3>
-          <input type="text" id="effect-preset-name-input" placeholder="Preset name (e.g., 'Fast Rainbow Flow')..." />
+          <div class="dialog-title">SAVE PRESET</div>
+          <input type="text" id="effect-preset-name-input" placeholder="Preset name..." />
           <div class="dialog-buttons">
-            <button id="btn-effect-preset-confirm" class="small">Save</button>
-            <button id="btn-effect-preset-cancel" class="small secondary">Cancel</button>
+            <button id="btn-effect-preset-confirm" class="btn">SAVE</button>
+            <button id="btn-effect-preset-cancel" class="btn">CANCEL</button>
           </div>
         </div>
       </div>
@@ -321,184 +110,431 @@ export class SimulatorUI {
   }
 
   /**
-   * Attach event listeners
+   * Build Solid Color effect parameters HTML
+   */
+  private buildSolidParams(): string {
+    return `
+      <div class="effect-layout">
+        <div class="effect-parameters">
+          <div class="param-group">
+            <label class="param-label">COLOR PRESET</label>
+            <select id="solid-preset">
+              <option value="white">White</option>
+              <option value="warm">Warm White</option>
+              <option value="custom">Custom Color</option>
+            </select>
+          </div>
+
+          <div class="param-group" id="solid-custom-group" style="display: none;">
+            <label class="param-label">RGB COLOR</label>
+            <input type="color" id="solid-rgb-color" value="#ff0000">
+
+            <label class="param-label" style="margin-top: 16px;">
+              COOL WHITE <span class="param-value" id="solid-cool-value">0</span>
+            </label>
+            <input type="range" id="solid-cool" min="0" max="255" value="0">
+
+            <label class="param-label" style="margin-top: 16px;">
+              WARM WHITE <span class="param-value" id="solid-warm-value">0</span>
+            </label>
+            <input type="range" id="solid-warm" min="0" max="255" value="0">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              FADE DURATION (MS) <span class="param-value" id="solid-duration-value">1000</span>
+            </label>
+            <input type="range" id="solid-duration" min="0" max="5000" value="1000" step="100">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              BRIGHTNESS <span class="param-value" id="solid-brightness-value">100%</span>
+            </label>
+            <input type="range" id="solid-brightness" min="0" max="100" value="100" step="1">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">TOPOLOGY MODE</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="solid-topology" value="singular" id="solid-topology-singular" checked>
+                <label for="solid-topology-singular">SINGULAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="solid-topology" value="circular" id="solid-topology-circular">
+                <label for="solid-topology-circular">CIRCULAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="solid-topology" value="linear" id="solid-topology-linear">
+                <label for="solid-topology-linear">LINEAR</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="effect-actions">
+          <button class="btn btn-primary" id="btn-solid-run">RUN EFFECT</button>
+          <button class="btn" id="btn-solid-save">SAVE AS PRESET</button>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Build Sequential Fade effect parameters HTML
+   */
+  private buildSequentialParams(): string {
+    return `
+      <div class="effect-layout">
+        <div class="effect-parameters">
+          <div class="param-group">
+            <label class="param-label">COLOR PRESET</label>
+            <select id="sequential-preset">
+              <option value="white">White</option>
+              <option value="warm">Warm White</option>
+              <option value="custom">Custom Color</option>
+            </select>
+          </div>
+
+          <div class="param-group" id="sequential-custom-group" style="display: none;">
+            <label class="param-label">RGB COLOR</label>
+            <input type="color" id="sequential-rgb-color" value="#ff0000">
+
+            <label class="param-label" style="margin-top: 16px;">
+              COOL WHITE <span class="param-value" id="sequential-cool-value">0</span>
+            </label>
+            <input type="range" id="sequential-cool" min="0" max="255" value="0">
+
+            <label class="param-label" style="margin-top: 16px;">
+              WARM WHITE <span class="param-value" id="sequential-warm-value">0</span>
+            </label>
+            <input type="range" id="sequential-warm" min="0" max="255" value="0">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              DELAY BETWEEN PANELS (MS) <span class="param-value" id="sequential-delay-value">100</span>
+            </label>
+            <input type="range" id="sequential-delay" min="10" max="500" value="100" step="10">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              FADE DURATION (MS) <span class="param-value" id="sequential-duration-value">500</span>
+            </label>
+            <input type="range" id="sequential-duration" min="100" max="3000" value="500" step="50">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              BRIGHTNESS <span class="param-value" id="sequential-brightness-value">100%</span>
+            </label>
+            <input type="range" id="sequential-brightness" min="0" max="100" value="100" step="1">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">TOPOLOGY MODE</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="sequential-topology" value="circular" id="sequential-topology-circular" checked>
+                <label for="sequential-topology-circular">CIRCULAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="sequential-topology" value="linear" id="sequential-topology-linear">
+                <label for="sequential-topology-linear">LINEAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="sequential-topology" value="singular" id="sequential-topology-singular">
+                <label for="sequential-topology-singular">SINGULAR</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="effect-actions">
+          <button class="btn btn-primary" id="btn-sequential-run">RUN EFFECT</button>
+          <button class="btn" id="btn-sequential-save">SAVE AS PRESET</button>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Build Flow effect parameters HTML
+   */
+  private buildFlowParams(): string {
+    return `
+      <div class="effect-layout">
+        <div class="effect-parameters">
+          <div class="param-group">
+            <label class="param-label">GRADIENT PRESET</label>
+            <select id="flow-preset">
+              <option value="rainbow">Rainbow</option>
+              <option value="ocean">Ocean</option>
+              <option value="sunset">Sunset</option>
+              <option value="fire">Fire</option>
+              <option value="breathe">Breathe</option>
+              <option value="custom">Custom Gradient</option>
+            </select>
+          </div>
+
+          <div class="param-group" id="flow-custom-group" style="display: none;">
+            <label class="param-label">GRADIENT PREVIEW</label>
+            <div id="flow-gradient-preview" style="width: 100%; height: 40px; border: 2px solid #fff; margin-bottom: 16px;"></div>
+
+            <label class="param-label">COLOR SPACE</label>
+            <select id="flow-colorspace">
+              <option value="rgb">RGB</option>
+              <option value="hsv">HSV</option>
+            </select>
+
+            <div style="margin-top: 16px;">
+              <label class="param-label">GRADIENT STOPS</label>
+              <div id="flow-stops-list"></div>
+              <button class="btn" id="btn-flow-add-stop" style="width: 100%; margin-top: 8px;">ADD STOP</button>
+            </div>
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              SPEED <span class="param-value" id="flow-speed-value">1.0</span>
+            </label>
+            <input type="range" id="flow-speed" min="0.1" max="10" value="1.0" step="0.1">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              GRADIENT SCALE <span class="param-value" id="flow-scale-value">0.2</span>
+            </label>
+            <input type="range" id="flow-scale" min="0" max="4" value="0.2" step="0.05">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              BRIGHTNESS <span class="param-value" id="flow-brightness-value">100%</span>
+            </label>
+            <input type="range" id="flow-brightness" min="0" max="100" value="100" step="1">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">TOPOLOGY MODE</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="flow-topology" value="circular" id="flow-topology-circular" checked>
+                <label for="flow-topology-circular">CIRCULAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="flow-topology" value="linear" id="flow-topology-linear">
+                <label for="flow-topology-linear">LINEAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="flow-topology" value="singular" id="flow-topology-singular">
+                <label for="flow-topology-singular">SINGULAR</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="effect-actions">
+          <button class="btn btn-primary" id="btn-flow-run">RUN EFFECT</button>
+          <button class="btn" id="btn-flow-save">SAVE AS PRESET</button>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Build Strobe effect parameters HTML
+   */
+  private buildStrobeParams(): string {
+    return `
+      <div class="effect-layout">
+        <div class="effect-parameters">
+          <div class="param-group">
+            <label class="param-label">COLOR PRESET</label>
+            <select id="strobe-preset">
+              <option value="white">White</option>
+              <option value="warm">Warm White</option>
+              <option value="custom">Custom Color</option>
+            </select>
+          </div>
+
+          <div class="param-group" id="strobe-custom-group" style="display: none;">
+            <label class="param-label">RGB COLOR</label>
+            <input type="color" id="strobe-rgb-color" value="#ffffff">
+
+            <label class="param-label" style="margin-top: 16px;">
+              COOL WHITE <span class="param-value" id="strobe-cool-value">0</span>
+            </label>
+            <input type="range" id="strobe-cool" min="0" max="255" value="0">
+
+            <label class="param-label" style="margin-top: 16px;">
+              WARM WHITE <span class="param-value" id="strobe-warm-value">0</span>
+            </label>
+            <input type="range" id="strobe-warm" min="0" max="255" value="0">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              FREQUENCY (HZ) <span class="param-value" id="strobe-frequency-value">5.0</span>
+            </label>
+            <input type="range" id="strobe-frequency" min="0.5" max="30" value="5" step="0.5">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">
+              BRIGHTNESS <span class="param-value" id="strobe-brightness-value">100%</span>
+            </label>
+            <input type="range" id="strobe-brightness" min="0" max="100" value="100" step="1">
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">TOPOLOGY MODE</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="strobe-topology" value="singular" id="strobe-topology-singular" checked>
+                <label for="strobe-topology-singular">SINGULAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="strobe-topology" value="circular" id="strobe-topology-circular">
+                <label for="strobe-topology-circular">CIRCULAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="strobe-topology" value="linear" id="strobe-topology-linear">
+                <label for="strobe-topology-linear">LINEAR</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="effect-actions">
+          <button class="btn btn-primary" id="btn-strobe-run">RUN EFFECT</button>
+          <button class="btn" id="btn-strobe-save">SAVE AS PRESET</button>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Build Blackout effect parameters HTML
+   */
+  private buildBlackoutParams(): string {
+    return `
+      <div class="effect-layout">
+        <div class="effect-parameters">
+          <div class="param-group">
+            <label class="param-label">
+              FADE DURATION (MS) <span class="param-value" id="blackout-duration-value">0</span>
+            </label>
+            <input type="range" id="blackout-duration" min="0" max="5000" value="0" step="100">
+            <p style="font-size: 10px; color: #999; margin-top: 8px;">Set to 0 for instant blackout</p>
+          </div>
+
+          <div class="param-group">
+            <label class="param-label">TOPOLOGY MODE</label>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" name="blackout-topology" value="singular" id="blackout-topology-singular" checked>
+                <label for="blackout-topology-singular">SINGULAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="blackout-topology" value="circular" id="blackout-topology-circular">
+                <label for="blackout-topology-circular">CIRCULAR</label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" name="blackout-topology" value="linear" id="blackout-topology-linear">
+                <label for="blackout-topology-linear">LINEAR</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="effect-actions">
+          <button class="btn btn-primary" id="btn-blackout-run">RUN EFFECT</button>
+          <button class="btn" id="btn-blackout-save">SAVE AS PRESET</button>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Attach event listeners for tab-based layout
    */
   private attachEventListeners(): void {
-    // Effect preset management
-    const presetSelect = document.getElementById('effect-preset-select') as HTMLSelectElement;
-    presetSelect?.addEventListener('change', () => {
-      if (presetSelect.value) {
-        this.loadEffectPreset(presetSelect.value);
-      }
-    });
-
-    document.getElementById('btn-save-effect-preset')?.addEventListener('click', () => {
-      this.showEffectPresetDialog();
-    });
-
-    document.getElementById('btn-delete-effect-preset')?.addEventListener('click', () => {
-      const presetSelect = document.getElementById('effect-preset-select') as HTMLSelectElement;
-      if (presetSelect?.value) {
-        this.deleteEffectPreset(presetSelect.value);
-      }
-    });
-
-    // Effect buttons
-    const effectButtons = this.container.querySelectorAll('button[data-effect]');
-    effectButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const effect = (btn as HTMLElement).dataset.effect as EffectType;
-        this.showEffectParams(effect);
-        this.runCurrentEffect();
+    // Effect tab buttons
+    const effectTabs = this.container.querySelectorAll('.effect-tab');
+    effectTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const effect = (tab as HTMLElement).dataset.effect as EffectType;
+        this.switchToTab(effect);
       });
     });
 
-    // Stop button
-    document.getElementById('btn-stop')?.addEventListener('click', () => {
-      this.client.stopEffect();
-      this.clearCurrentEffect();
-    });
-
-    // Topology mode
-    const topologyRadios = this.container.querySelectorAll('input[name="topology"]');
-    topologyRadios.forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        const target = e.target as HTMLInputElement;
-        this.client.setTopology(target.value);
-      });
-    });
-
-    // Brightness slider
-    const brightnessSlider = document.getElementById('brightness-slider') as HTMLInputElement;
-    brightnessSlider?.addEventListener('input', () => {
-      const value = document.getElementById('brightness-value');
-      if (value) value.textContent = `${brightnessSlider.value}%`;
-      this.runCurrentEffect();
-    });
-
-    // Solid color effect
+    // Solid color effect listeners
     this.attachSolidColorListeners();
 
-    // Sequential fade effect
+    // Sequential fade effect listeners
     this.attachSequentialListeners();
 
-    // Flow effect
+    // Flow effect listeners
     this.attachFlowListeners();
 
-    // Strobe effect
+    // Strobe effect listeners
     this.attachStrobeListeners();
 
-    // Blackout effect
+    // Blackout effect listeners
     this.attachBlackoutListeners();
 
     // Load saved presets from localStorage
     this.loadEffectPresetsFromStorage();
+
+    // Show first tab by default
+    this.switchToTab('solid');
   }
 
   /**
-   * Show effect-specific parameters
+   * Switch to a specific effect tab
    */
-  private showEffectParams(effect: EffectType): void {
+  private switchToTab(effect: EffectType): void {
     this.currentEffect = effect;
 
-    // Hide all effect params
-    this.hideAllEffectParams();
-
-    // Show selected effect params
-    const paramsDiv = document.getElementById(`params-${effect}`);
-    if (paramsDiv) {
-      paramsDiv.style.display = 'block';
-    }
-
-    // Show brightness control for all effects
-    const brightnessGroup = document.getElementById('brightness-group');
-    if (brightnessGroup) {
-      brightnessGroup.style.display = 'block';
-    }
-
-    // Auto-set topology to singular for effects that only work in singular mode
-    // Also hide topology controls for these effects
-    const topologyGroup = document.getElementById('topology-group');
-    if (effect === 'strobe' || effect === 'blackout' || effect === 'solid') {
-      const singularRadio = this.container.querySelector('input[name="topology"][value="singular"]') as HTMLInputElement;
-      if (singularRadio && !singularRadio.checked) {
-        singularRadio.checked = true;
-        this.client.setTopology('singular');
-      }
-      // Hide topology controls
-      if (topologyGroup) {
-        topologyGroup.style.display = 'none';
-      }
-    } else {
-      // Show topology controls for effects that use topology
-      if (topologyGroup) {
-        topologyGroup.style.display = 'block';
-      }
-    }
-
-    // Update button states
-    const buttons = this.container.querySelectorAll('button[data-effect]');
-    buttons.forEach(btn => {
-      if ((btn as HTMLElement).dataset.effect === effect) {
-        btn.classList.add('active');
+    // Update tab active states
+    const tabs = this.container.querySelectorAll('.effect-tab');
+    tabs.forEach(tab => {
+      if ((tab as HTMLElement).dataset.effect === effect) {
+        tab.classList.add('active');
       } else {
-        btn.classList.remove('active');
+        tab.classList.remove('active');
       }
     });
-  }
 
-  /**
-   * Hide all effect parameter sections
-   */
-  private hideAllEffectParams(): void {
-    const paramsDivs = this.container.querySelectorAll('.effect-params');
-    paramsDivs.forEach(div => {
-      (div as HTMLElement).style.display = 'none';
+    // Update effect params visibility
+    const allParams = this.container.querySelectorAll('.effect-params');
+    allParams.forEach(params => {
+      params.classList.remove('active');
     });
 
-    const buttons = this.container.querySelectorAll('button[data-effect]');
-    buttons.forEach(btn => btn.classList.remove('active'));
-
-    // Don't clear currentEffect here - it's set by showEffectParams before this is called
-    // Only clear when explicitly stopping
-  }
-
-  /**
-   * Clear current effect state
-   */
-  private clearCurrentEffect(): void {
-    this.currentEffect = null;
-    this.hideAllEffectParams();
-
-    // Hide topology controls when no effect is selected
-    const topologyGroup = document.getElementById('topology-group');
-    if (topologyGroup) {
-      topologyGroup.style.display = 'none';
-    }
-
-    // Hide brightness control when no effect is selected
-    const brightnessGroup = document.getElementById('brightness-group');
-    if (brightnessGroup) {
-      brightnessGroup.style.display = 'none';
+    const activeParams = document.getElementById(`params-${effect}`);
+    if (activeParams) {
+      activeParams.classList.add('active');
     }
   }
 
   /**
-   * Get the current brightness value (0-1)
+   * Run a specific effect with its current parameters
    */
-  private getBrightness(): number {
-    const brightnessSlider = document.getElementById('brightness-slider') as HTMLInputElement;
-    return parseFloat(brightnessSlider?.value || '100') / 100;
-  }
+  private runEffect(effect: EffectType): void {
+    this.currentEffect = effect;
 
-  /**
-   * Run the currently selected effect with its parameters
-   */
-  private runCurrentEffect(): void {
-    if (!this.currentEffect) return;
+    // Get topology from the effect-specific radio buttons
+    const topologyRadio = document.querySelector(`input[name="${effect}-topology"]:checked`) as HTMLInputElement;
+    if (topologyRadio) {
+      this.client.setTopology(topologyRadio.value);
+    }
 
     const params = this.getCurrentEffectParams();
-    this.client.runEffect(this.currentEffect, params);
+    this.client.runEffect(effect, params);
   }
 
   /**
@@ -524,6 +560,17 @@ export class SimulatorUI {
   // ===== SOLID COLOR EFFECT =====
 
   private attachSolidColorListeners(): void {
+    // Run button
+    document.getElementById('btn-solid-run')?.addEventListener('click', () => {
+      this.runEffect('solid');
+    });
+
+    // Save button
+    document.getElementById('btn-solid-save')?.addEventListener('click', () => {
+      this.showEffectPresetDialog();
+    });
+
+    // Preset selector
     const presetSelect = document.getElementById('solid-preset') as HTMLSelectElement;
     const customGroup = document.getElementById('solid-custom-group');
 
@@ -531,11 +578,10 @@ export class SimulatorUI {
       if (customGroup) {
         customGroup.style.display = presetSelect.value === 'custom' ? 'block' : 'none';
       }
-      this.runCurrentEffect();
     });
 
     // RGB color picker
-    document.getElementById('solid-rgb-color')?.addEventListener('input', () => this.runCurrentEffect());
+    document.getElementById('solid-rgb-color')?.addEventListener('input', () => {});
 
     // CCT sliders
     const coolSlider = document.getElementById('solid-cool') as HTMLInputElement;
@@ -544,13 +590,11 @@ export class SimulatorUI {
     coolSlider?.addEventListener('input', () => {
       const value = document.getElementById('solid-cool-value');
       if (value) value.textContent = coolSlider.value;
-      this.runCurrentEffect();
     });
 
     warmSlider?.addEventListener('input', () => {
       const value = document.getElementById('solid-warm-value');
       if (value) value.textContent = warmSlider.value;
-      this.runCurrentEffect();
     });
 
     // Duration slider
@@ -558,17 +602,35 @@ export class SimulatorUI {
     durationSlider?.addEventListener('input', () => {
       const value = document.getElementById('solid-duration-value');
       if (value) value.textContent = durationSlider.value;
-      this.runCurrentEffect();
+    });
+
+    // Brightness slider
+    const brightnessSlider = document.getElementById('solid-brightness') as HTMLInputElement;
+    brightnessSlider?.addEventListener('input', () => {
+      const value = document.getElementById('solid-brightness-value');
+      if (value) value.textContent = `${brightnessSlider.value}%`;
+    });
+
+    // Topology radio buttons
+    const topologyRadios = document.querySelectorAll('input[name="solid-topology"]');
+    topologyRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        if (this.currentEffect === 'solid') {
+          this.client.setTopology(target.value);
+        }
+      });
     });
   }
 
   private getSolidParams(): any {
     const presetSelect = document.getElementById('solid-preset') as HTMLSelectElement;
     const durationInput = document.getElementById('solid-duration') as HTMLInputElement;
+    const brightnessInput = document.getElementById('solid-brightness') as HTMLInputElement;
 
     const preset = presetSelect?.value;
-    const duration = parseInt(durationInput?.value || '1000');
-    const brightness = this.getBrightness();
+    const transitionDuration = parseInt(durationInput?.value || '1000');
+    const brightness = parseFloat(brightnessInput?.value || '100') / 100;
 
     if (preset === 'custom') {
       const rgbInput = document.getElementById('solid-rgb-color') as HTMLInputElement;
@@ -588,15 +650,26 @@ export class SimulatorUI {
         solid: { r, g, b, cool, warm }
       });
 
-      return { colorPreset: 'custom', duration, brightness };
+      return { colorPreset: 'custom', transitionDuration, brightness };
     }
 
-    return { colorPreset: preset || 'white', duration, brightness };
+    return { colorPreset: preset || 'white', transitionDuration, brightness };
   }
 
   // ===== SEQUENTIAL FADE EFFECT =====
 
   private attachSequentialListeners(): void {
+    // Run button
+    document.getElementById('btn-sequential-run')?.addEventListener('click', () => {
+      this.runEffect('sequential');
+    });
+
+    // Save button
+    document.getElementById('btn-sequential-save')?.addEventListener('click', () => {
+      this.showEffectPresetDialog();
+    });
+
+    // Preset selector
     const presetSelect = document.getElementById('sequential-preset') as HTMLSelectElement;
     const customGroup = document.getElementById('sequential-custom-group');
 
@@ -604,11 +677,10 @@ export class SimulatorUI {
       if (customGroup) {
         customGroup.style.display = presetSelect.value === 'custom' ? 'block' : 'none';
       }
-      this.runCurrentEffect();
     });
 
     // RGB color picker
-    document.getElementById('sequential-rgb-color')?.addEventListener('input', () => this.runCurrentEffect());
+    document.getElementById('sequential-rgb-color')?.addEventListener('input', () => {});
 
     // CCT sliders
     const coolSlider = document.getElementById('sequential-cool') as HTMLInputElement;
@@ -617,13 +689,11 @@ export class SimulatorUI {
     coolSlider?.addEventListener('input', () => {
       const value = document.getElementById('sequential-cool-value');
       if (value) value.textContent = coolSlider.value;
-      this.runCurrentEffect();
     });
 
     warmSlider?.addEventListener('input', () => {
       const value = document.getElementById('sequential-warm-value');
       if (value) value.textContent = warmSlider.value;
-      this.runCurrentEffect();
     });
 
     // Timing sliders
@@ -631,14 +701,30 @@ export class SimulatorUI {
     delaySlider?.addEventListener('input', () => {
       const value = document.getElementById('sequential-delay-value');
       if (value) value.textContent = delaySlider.value;
-      this.runCurrentEffect();
     });
 
     const durationSlider = document.getElementById('sequential-duration') as HTMLInputElement;
     durationSlider?.addEventListener('input', () => {
       const value = document.getElementById('sequential-duration-value');
       if (value) value.textContent = durationSlider.value;
-      this.runCurrentEffect();
+    });
+
+    // Brightness slider
+    const brightnessSlider = document.getElementById('sequential-brightness') as HTMLInputElement;
+    brightnessSlider?.addEventListener('input', () => {
+      const value = document.getElementById('sequential-brightness-value');
+      if (value) value.textContent = `${brightnessSlider.value}%`;
+    });
+
+    // Topology radio buttons
+    const topologyRadios = document.querySelectorAll('input[name="sequential-topology"]');
+    topologyRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        if (this.currentEffect === 'sequential') {
+          this.client.setTopology(target.value);
+        }
+      });
     });
   }
 
@@ -646,11 +732,12 @@ export class SimulatorUI {
     const presetSelect = document.getElementById('sequential-preset') as HTMLSelectElement;
     const delayInput = document.getElementById('sequential-delay') as HTMLInputElement;
     const durationInput = document.getElementById('sequential-duration') as HTMLInputElement;
+    const brightnessInput = document.getElementById('sequential-brightness') as HTMLInputElement;
 
     const preset = presetSelect?.value;
     const delayBetweenPanels = parseInt(delayInput?.value || '100');
     const fadeDuration = parseInt(durationInput?.value || '500');
-    const brightness = this.getBrightness();
+    const brightness = parseFloat(brightnessInput?.value || '100') / 100;
 
     if (preset === 'custom') {
       const rgbInput = document.getElementById('sequential-rgb-color') as HTMLInputElement;
@@ -678,6 +765,17 @@ export class SimulatorUI {
   // ===== FLOW EFFECT =====
 
   private attachFlowListeners(): void {
+    // Run button
+    document.getElementById('btn-flow-run')?.addEventListener('click', () => {
+      this.runEffect('flow');
+    });
+
+    // Save button
+    document.getElementById('btn-flow-save')?.addEventListener('click', () => {
+      this.showEffectPresetDialog();
+    });
+
+    // Preset selector
     const presetSelect = document.getElementById('flow-preset') as HTMLSelectElement;
     const customGroup = document.getElementById('flow-custom-group');
 
@@ -689,7 +787,6 @@ export class SimulatorUI {
           this.updateGradientPreview('flow');
         }
       }
-      this.runCurrentEffect();
     });
 
     // Speed slider
@@ -697,7 +794,6 @@ export class SimulatorUI {
     speedSlider?.addEventListener('input', () => {
       const value = document.getElementById('flow-speed-value');
       if (value) value.textContent = parseFloat(speedSlider.value).toFixed(1);
-      this.runCurrentEffect();
     });
 
     // Gradient scale slider
@@ -705,7 +801,13 @@ export class SimulatorUI {
     scaleSlider?.addEventListener('input', () => {
       const value = document.getElementById('flow-scale-value');
       if (value) value.textContent = parseFloat(scaleSlider.value).toFixed(2);
-      this.runCurrentEffect();
+    });
+
+    // Brightness slider
+    const brightnessSlider = document.getElementById('flow-brightness') as HTMLInputElement;
+    brightnessSlider?.addEventListener('input', () => {
+      const value = document.getElementById('flow-brightness-value');
+      if (value) value.textContent = `${brightnessSlider.value}%`;
     });
 
     // Gradient editor
@@ -718,17 +820,29 @@ export class SimulatorUI {
     document.getElementById('btn-flow-add-stop')?.addEventListener('click', () => {
       this.addGradientStop('flow');
     });
+
+    // Topology radio buttons
+    const topologyRadios = document.querySelectorAll('input[name="flow-topology"]');
+    topologyRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        if (this.currentEffect === 'flow') {
+          this.client.setTopology(target.value);
+        }
+      });
+    });
   }
 
   private getFlowParams(): any {
     const presetSelect = document.getElementById('flow-preset') as HTMLSelectElement;
     const speedInput = document.getElementById('flow-speed') as HTMLInputElement;
     const scaleInput = document.getElementById('flow-scale') as HTMLInputElement;
+    const brightnessInput = document.getElementById('flow-brightness') as HTMLInputElement;
 
     const preset = presetSelect?.value;
     const speed = parseFloat(speedInput?.value || '1.0');
     const scale = parseFloat(scaleInput?.value || '0.2');
-    const brightness = this.getBrightness();
+    const brightness = parseFloat(brightnessInput?.value || '100') / 100;
 
     console.log('Flow params:', { preset, speed, scale, brightness });
 
@@ -743,6 +857,17 @@ export class SimulatorUI {
   // ===== STROBE EFFECT =====
 
   private attachStrobeListeners(): void {
+    // Run button
+    document.getElementById('btn-strobe-run')?.addEventListener('click', () => {
+      this.runEffect('strobe');
+    });
+
+    // Save button
+    document.getElementById('btn-strobe-save')?.addEventListener('click', () => {
+      this.showEffectPresetDialog();
+    });
+
+    // Preset selector
     const presetSelect = document.getElementById('strobe-preset') as HTMLSelectElement;
     const customGroup = document.getElementById('strobe-custom-group');
 
@@ -750,11 +875,10 @@ export class SimulatorUI {
       if (customGroup) {
         customGroup.style.display = presetSelect.value === 'custom' ? 'block' : 'none';
       }
-      this.runCurrentEffect();
     });
 
     // RGB color picker
-    document.getElementById('strobe-rgb-color')?.addEventListener('input', () => this.runCurrentEffect());
+    document.getElementById('strobe-rgb-color')?.addEventListener('input', () => {});
 
     // CCT sliders
     const coolSlider = document.getElementById('strobe-cool') as HTMLInputElement;
@@ -763,13 +887,11 @@ export class SimulatorUI {
     coolSlider?.addEventListener('input', () => {
       const value = document.getElementById('strobe-cool-value');
       if (value) value.textContent = coolSlider.value;
-      this.runCurrentEffect();
     });
 
     warmSlider?.addEventListener('input', () => {
       const value = document.getElementById('strobe-warm-value');
       if (value) value.textContent = warmSlider.value;
-      this.runCurrentEffect();
     });
 
     // Frequency slider
@@ -777,17 +899,35 @@ export class SimulatorUI {
     frequencySlider?.addEventListener('input', () => {
       const value = document.getElementById('strobe-frequency-value');
       if (value) value.textContent = parseFloat(frequencySlider.value).toFixed(1);
-      this.runCurrentEffect();
+    });
+
+    // Brightness slider
+    const brightnessSlider = document.getElementById('strobe-brightness') as HTMLInputElement;
+    brightnessSlider?.addEventListener('input', () => {
+      const value = document.getElementById('strobe-brightness-value');
+      if (value) value.textContent = `${brightnessSlider.value}%`;
+    });
+
+    // Topology radio buttons
+    const topologyRadios = document.querySelectorAll('input[name="strobe-topology"]');
+    topologyRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        if (this.currentEffect === 'strobe') {
+          this.client.setTopology(target.value);
+        }
+      });
     });
   }
 
   private getStrobeParams(): any {
     const presetSelect = document.getElementById('strobe-preset') as HTMLSelectElement;
     const frequencyInput = document.getElementById('strobe-frequency') as HTMLInputElement;
+    const brightnessInput = document.getElementById('strobe-brightness') as HTMLInputElement;
 
     const preset = presetSelect?.value;
     const frequency = parseFloat(frequencyInput?.value || '5');
-    const brightness = this.getBrightness();
+    const brightness = parseFloat(brightnessInput?.value || '100') / 100;
 
     if (preset === 'custom') {
       const rgbInput = document.getElementById('strobe-rgb-color') as HTMLInputElement;
@@ -815,10 +955,32 @@ export class SimulatorUI {
   // ===== BLACKOUT EFFECT =====
 
   private attachBlackoutListeners(): void {
+    // Run button
+    document.getElementById('btn-blackout-run')?.addEventListener('click', () => {
+      this.runEffect('blackout');
+    });
+
+    // Save button
+    document.getElementById('btn-blackout-save')?.addEventListener('click', () => {
+      this.showEffectPresetDialog();
+    });
+
+    // Duration slider
     const durationSlider = document.getElementById('blackout-duration') as HTMLInputElement;
     durationSlider?.addEventListener('input', () => {
       const value = document.getElementById('blackout-duration-value');
       if (value) value.textContent = durationSlider.value;
+    });
+
+    // Topology radio buttons
+    const topologyRadios = document.querySelectorAll('input[name="blackout-topology"]');
+    topologyRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        if (this.currentEffect === 'blackout') {
+          this.client.setTopology(target.value);
+        }
+      });
     });
   }
 
@@ -839,23 +1001,29 @@ export class SimulatorUI {
 
     this.gradientStops.forEach((stop, index) => {
       const stopElement = document.createElement('div');
-      stopElement.className = 'gradient-stop';
+      stopElement.style.marginBottom = '16px';
+      stopElement.style.paddingBottom = '16px';
+      stopElement.style.borderBottom = '2px solid #333';
+
       stopElement.innerHTML = `
-        <div class="stop-header">
-          <span>Stop ${index + 1}</span>
-          ${this.gradientStops.length > 2 ? `<button class="btn-remove-stop small" data-index="${index}">Remove</button>` : ''}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <label class="param-label" style="margin-bottom: 0;">STOP ${index + 1}</label>
+          ${this.gradientStops.length > 2 ? `<button class="btn btn-remove-stop" data-index="${index}" style="padding: 6px 10px; font-size: 9px;">REMOVE</button>` : ''}
         </div>
-        <div class="slider-container">
-          <div class="slider-label">
-            <span>Position</span>
-            <span class="slider-value">${stop.position.toFixed(3)}</span>
-          </div>
-          <input type="range" class="stop-position" data-index="${index}" min="0" max="1000" value="${stop.position * 1000}" step="1">
-        </div>
-        <div class="slider-container">
-          <div class="slider-label"><span>RGB Color</span></div>
-          <input type="color" class="stop-color" data-index="${index}" value="${this.rgbToHex(stop.color.r, stop.color.g, stop.color.b)}">
-        </div>
+        <label class="param-label" style="margin-top: 12px;">
+          POSITION <span class="param-value">${stop.position.toFixed(3)}</span>
+        </label>
+        <input type="range" class="stop-position" data-index="${index}" min="0" max="1000" value="${stop.position * 1000}" step="1">
+        <label class="param-label" style="margin-top: 12px;">RGB COLOR</label>
+        <input type="color" class="stop-color" data-index="${index}" value="${this.rgbToHex(stop.color.r, stop.color.g, stop.color.b)}">
+        <label class="param-label" style="margin-top: 12px;">
+          COOL WHITE <span class="param-value">${stop.color.cool}</span>
+        </label>
+        <input type="range" class="stop-cool" data-index="${index}" min="0" max="255" value="${stop.color.cool}">
+        <label class="param-label" style="margin-top: 12px;">
+          WARM WHITE <span class="param-value">${stop.color.warm}</span>
+        </label>
+        <input type="range" class="stop-warm" data-index="${index}" min="0" max="255" value="${stop.color.warm}">
       `;
       stopsList.appendChild(stopElement);
     });
@@ -874,7 +1042,9 @@ export class SimulatorUI {
         const position = parseInt(target.value) / 1000;
         this.gradientStops[index].position = position;
 
-        const valueSpan = target.parentElement?.querySelector('.slider-value');
+        // Find the value span in the previous sibling label
+        const label = target.previousElementSibling as HTMLElement;
+        const valueSpan = label?.querySelector('.param-value');
         if (valueSpan) valueSpan.textContent = position.toFixed(3);
 
         this.updateGradientPreview(effect);
@@ -893,6 +1063,36 @@ export class SimulatorUI {
         this.gradientStops[index].color.r = r;
         this.gradientStops[index].color.g = g;
         this.gradientStops[index].color.b = b;
+
+        this.updateGradientPreview(effect);
+      });
+    });
+
+    container.querySelectorAll('.stop-cool').forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        const index = parseInt(target.dataset.index || '0');
+        const cool = parseInt(target.value);
+        this.gradientStops[index].color.cool = cool;
+
+        const label = target.previousElementSibling as HTMLElement;
+        const valueSpan = label?.querySelector('.param-value');
+        if (valueSpan) valueSpan.textContent = cool.toString();
+
+        this.updateGradientPreview(effect);
+      });
+    });
+
+    container.querySelectorAll('.stop-warm').forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        const index = parseInt(target.dataset.index || '0');
+        const warm = parseInt(target.value);
+        this.gradientStops[index].color.warm = warm;
+
+        const label = target.previousElementSibling as HTMLElement;
+        const valueSpan = label?.querySelector('.param-value');
+        if (valueSpan) valueSpan.textContent = warm.toString();
 
         this.updateGradientPreview(effect);
       });
@@ -973,10 +1173,13 @@ export class SimulatorUI {
     const dialog = document.getElementById('effect-preset-dialog');
     const input = document.getElementById('effect-preset-name-input') as HTMLInputElement;
 
-    if (!dialog || !input) return;
+    if (!dialog || !input) {
+      console.error('Dialog or input not found', { dialog, input });
+      return;
+    }
 
     input.value = '';
-    dialog.style.display = 'flex';
+    dialog.classList.add('active');
 
     const confirmBtn = document.getElementById('btn-effect-preset-confirm');
     const cancelBtn = document.getElementById('btn-effect-preset-cancel');
@@ -985,14 +1188,14 @@ export class SimulatorUI {
       const name = input.value.trim();
       if (name) {
         this.saveEffectPreset(name);
-        dialog.style.display = 'none';
+        dialog.classList.remove('active');
       }
       confirmBtn?.removeEventListener('click', confirm);
       cancelBtn?.removeEventListener('click', cancel);
     };
 
     const cancel = () => {
-      dialog.style.display = 'none';
+      dialog.classList.remove('active');
       confirmBtn?.removeEventListener('click', confirm);
       cancelBtn?.removeEventListener('click', cancel);
     };
@@ -1007,8 +1210,8 @@ export class SimulatorUI {
   private saveEffectPreset(name: string): void {
     if (!this.currentEffect) return;
 
-    // Get current topology
-    const topologyRadio = this.container.querySelector('input[name="topology"]:checked') as HTMLInputElement;
+    // Get current topology from effect-specific radio buttons
+    const topologyRadio = document.querySelector(`input[name="${this.currentEffect}-topology"]:checked`) as HTMLInputElement;
     const topology = topologyRadio?.value || 'circular';
 
     // Get current effect parameters
@@ -1026,8 +1229,8 @@ export class SimulatorUI {
     this.effectPresets.set(name, preset);
     this.saveEffectPresetsToStorage();
 
-    // Add to dropdown
-    this.addEffectPresetToDropdown(name);
+    // Update preset bank UI
+    this.renderPresetBank();
 
     console.log(`✅ Saved effect preset: ${name}`);
   }
@@ -1039,15 +1242,15 @@ export class SimulatorUI {
     const preset = this.effectPresets.get(name);
     if (!preset) return;
 
-    // Set topology
-    const topologyRadio = this.container.querySelector(`input[name="topology"][value="${preset.topology}"]`) as HTMLInputElement;
+    // Switch to the preset's effect tab
+    this.switchToTab(preset.effect);
+
+    // Set topology for this effect
+    const topologyRadio = document.querySelector(`input[name="${preset.effect}-topology"][value="${preset.topology}"]`) as HTMLInputElement;
     if (topologyRadio) {
       topologyRadio.checked = true;
       this.client.setTopology(preset.topology);
     }
-
-    // Show effect params
-    this.showEffectParams(preset.effect);
 
     // Set parameters based on effect type
     this.setEffectParameters(preset.effect, preset.params);
@@ -1074,35 +1277,46 @@ export class SimulatorUI {
     this.effectPresets.delete(name);
     this.saveEffectPresetsToStorage();
 
-    // Remove from dropdown
-    const select = document.getElementById('effect-preset-select') as HTMLSelectElement;
-    const option = Array.from(select.options).find(opt => opt.value === name);
-    if (option) {
-      select.removeChild(option);
-      select.value = '';
-    }
+    // Update preset bank UI
+    this.renderPresetBank();
 
     console.log(`🗑️ Deleted effect preset: ${name}`);
   }
 
   /**
-   * Add effect preset to dropdown
+   * Render the preset bank with all saved presets
    */
-  private addEffectPresetToDropdown(name: string): void {
-    const select = document.getElementById('effect-preset-select') as HTMLSelectElement;
-    if (!select) return;
+  private renderPresetBank(): void {
+    const container = document.getElementById('preset-buttons-container');
+    if (!container) return;
 
-    // Check if already exists
-    const existing = Array.from(select.options).find(opt => opt.value === name);
-    if (existing) return;
+    container.innerHTML = '';
 
-    const option = document.createElement('option');
-    option.value = name;
-    option.textContent = name;
-    select.appendChild(option);
+    if (this.effectPresets.size === 0) {
+      container.innerHTML = '<p style="color: #666; font-size: 11px; padding: 8px 0;">No saved presets</p>';
+      return;
+    }
 
-    // Select the new preset
-    select.value = name;
+    this.effectPresets.forEach((preset, name) => {
+      const button = document.createElement('button');
+      button.className = 'preset-btn';
+      button.textContent = name;
+      button.title = `${preset.effect.toUpperCase()} - ${preset.topology}`;
+
+      button.addEventListener('click', () => {
+        this.loadEffectPreset(name);
+        button.classList.add('active');
+        setTimeout(() => button.classList.remove('active'), 500);
+      });
+
+      // Right-click to delete
+      button.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        this.deleteEffectPreset(name);
+      });
+
+      container.appendChild(button);
+    });
   }
 
   /**
@@ -1123,12 +1337,15 @@ export class SimulatorUI {
         const presets: EffectPreset[] = JSON.parse(stored);
         presets.forEach(preset => {
           this.effectPresets.set(preset.name, preset);
-          this.addEffectPresetToDropdown(preset.name);
         });
+        this.renderPresetBank();
         console.log(`✅ Loaded ${presets.length} effect presets`);
+      } else {
+        this.renderPresetBank();
       }
     } catch (error) {
       console.error('Failed to load effect presets:', error);
+      this.renderPresetBank();
     }
   }
 

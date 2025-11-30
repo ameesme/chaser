@@ -13,7 +13,7 @@ export class CanvasRenderer implements EngineOutput {
   private columns: number = 2;
   private rowsPerColumn: number = 7;
 
-  constructor(canvas: HTMLCanvasElement, scale: number = 2) {
+  constructor(canvas: HTMLCanvasElement, scale: number = 1) {
     this.canvas = canvas;
     this.scale = scale;
 

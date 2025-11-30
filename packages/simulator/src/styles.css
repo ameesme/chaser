@@ -1,3 +1,7 @@
+/* =====================================================
+   CHASER.DMX - Retro Black & White Interface
+   ===================================================== */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,156 +9,296 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: #1a1a1a;
-  color: #e0e0e0;
-  line-height: 1.6;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  background: #000;
+  color: #fff;
+  line-height: 1.4;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
+/* =====================================================
+   RETRO LAYOUT
+   ===================================================== */
+
+.retro-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.retro-header {
+  background: #fff;
+  color: #000;
+  padding: 12px 20px;
+  border-bottom: 4px solid #000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.header-title {
+  font-size: 18px;
+}
+
+.header-status {
+  display: flex;
+  gap: 16px;
+  font-weight: 500;
+}
+
+.separator {
+  opacity: 0.3;
+}
+
+.retro-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  height: calc(100vh - 52px);
+  overflow: hidden;
+}
+
+/* =====================================================
+   PANELS
+   ===================================================== */
+
+.panel {
+  border: 4px solid #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-header {
+  background: #fff;
+  color: #000;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2px;
+  border-bottom: 4px solid #000;
+}
+
+.panel-body {
+  flex: 1;
+  overflow: auto;
+  background: #000;
+}
+
+.panel-preview {
+  border-right: none;
+}
+
+.panel-preview .panel-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
 }
 
-header {
-  margin-bottom: 30px;
+.panel-controls {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-header h1 {
-  font-size: 2rem;
-  margin-bottom: 10px;
+#controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* =====================================================
+   CANVAS
+   ===================================================== */
+
+#canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* =====================================================
+   EFFECT TABS
+   ===================================================== */
+
+.effect-tabs {
+  display: flex;
+  border-bottom: 4px solid #fff;
+  background: #000;
+}
+
+.effect-tab {
+  flex: 1;
+  padding: 12px 8px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-right: 2px solid #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.1s;
+  text-transform: uppercase;
+}
+
+.effect-tab:last-child {
+  border-right: none;
+}
+
+.effect-tab:hover {
+  background: #222;
+}
+
+.effect-tab.active {
+  background: #fff;
+  color: #000;
+}
+
+/* =====================================================
+   EFFECT PARAMETERS
+   ===================================================== */
+
+.effect-params-container {
+  height: 50%;
+  background: #000;
+  overflow: hidden;
+}
+
+.effect-params {
+  display: none;
+  height: 100%;
+}
+
+.effect-params.active {
+  display: flex;
+}
+
+.effect-layout {
+  display: flex;
+  gap: 16px;
+  height: 100%;
+  width: 100%;
+}
+
+.effect-parameters {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.effect-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 180px;
+  padding: 20px 20px 20px 0;
+}
+
+.effect-actions .btn {
+  flex: 1;
+}
+
+.param-group {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #333;
+}
+
+.param-group:last-child {
+  border-bottom: none;
+}
+
+.param-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  color: #999;
+}
+
+.param-value {
+  float: right;
   color: #fff;
 }
 
-#status {
-  display: flex;
-  gap: 20px;
-  font-size: 0.9rem;
-  color: #888;
-}
-
-#status span {
-  padding: 5px 10px;
-  background: #2a2a2a;
-  border-radius: 4px;
-}
-
-main {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 30px;
-}
-
-.canvas-container {
-  background: #0a0a0a;
-  border-radius: 8px;
-  padding: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 600px;
-}
-
-#canvas {
-  border: 2px solid #333;
-  border-radius: 4px;
-}
-
-.controls {
-  background: #2a2a2a;
-  border-radius: 8px;
-  padding: 20px;
-  height: fit-content;
-}
-
-.control-group {
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #3a3a3a;
-}
-
-.control-group:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.control-group h3 {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  color: #999;
-  margin-bottom: 15px;
-  letter-spacing: 0.5px;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 8px;
-  background: #3a7ca5;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: background 0.2s;
-}
-
-button:hover {
-  background: #4a8cb5;
-}
-
-button:active {
-  background: #2a6c95;
-}
-
-button.danger {
-  background: #c53030;
-}
-
-button.danger:hover {
-  background: #d53040;
-}
-
-label {
-  display: block;
-  margin-bottom: 12px;
-  font-size: 0.85rem;
-}
-
-label input[type="radio"] {
-  margin-right: 8px;
-}
-
+/* Select */
 select {
   width: 100%;
-  padding: 10px;
-  background: #1a1a1a;
-  color: #e0e0e0;
-  border: 1px solid #3a3a3a;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  padding: 10px 12px;
+  background: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='white' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
 }
 
 select:focus {
   outline: none;
-  border-color: #3a7ca5;
+  box-shadow: 0 0 0 2px #fff inset;
 }
 
+select:hover {
+  background: #111;
+}
+
+/* Sliders */
 input[type="range"] {
   width: 100%;
-  margin-top: 8px;
+  height: 6px;
+  border-radius: 0;
+  background: #333;
+  outline: none;
+  -webkit-appearance: none;
+  margin: 8px 0;
 }
 
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 0;
+  background: #fff;
+  cursor: pointer;
+  border: 2px solid #000;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 0;
+  background: #fff;
+  cursor: pointer;
+  border: 2px solid #000;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/* Color Picker */
 input[type="color"] {
   width: 100%;
   height: 50px;
-  border: 2px solid #3a3a3a;
-  border-radius: 4px;
+  border: 2px solid #fff;
   cursor: pointer;
-  background: transparent;
+  background: #000;
+  padding: 4px;
 }
 
 input[type="color"]::-webkit-color-swatch-wrapper {
@@ -162,100 +306,271 @@ input[type="color"]::-webkit-color-swatch-wrapper {
 }
 
 input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 2px;
+  border: 2px solid #000;
 }
 
-.slider-container {
-  margin-bottom: 12px;
-}
-
-.slider-label {
+/* Radio Buttons */
+.radio-group {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 0.85rem;
+  gap: 12px;
+  margin-top: 8px;
 }
 
-.slider-value {
-  color: #3a7ca5;
+.radio-option {
+  flex: 1;
+}
+
+.radio-option input[type="radio"] {
+  display: none;
+}
+
+.radio-option label {
+  display: block;
+  padding: 8px;
+  background: #000;
+  border: 2px solid #fff;
+  text-align: center;
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.1s;
 }
 
-/* Gradient Editor */
-.gradient-preview-container {
-  margin-bottom: 20px;
+.radio-option input[type="radio"]:checked + label {
+  background: #fff;
+  color: #000;
 }
 
-.gradient-preview {
-  width: 100%;
-  height: 60px;
-  border-radius: 4px;
-  border: 2px solid #3a3a3a;
-  background: linear-gradient(to right, #ff0000, #0000ff);
+.radio-option label:hover {
+  background: #222;
 }
 
-#gradient-stops-container {
-  margin-top: 20px;
+/* =====================================================
+   PRESET BANK
+   ===================================================== */
+
+.preset-bank {
+  border-top: 4px solid #fff;
+  background: #000;
+  padding: 16px;
+  height: 50%;
+  overflow-y: auto;
 }
 
-#gradient-stops-container h4 {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  color: #999;
-  margin-bottom: 15px;
-  letter-spacing: 0.5px;
-}
-
-#gradient-stops-list {
-  margin-bottom: 15px;
-}
-
-.gradient-stop {
-  background: #1a1a1a;
-  border: 1px solid #3a3a3a;
-  border-radius: 4px;
-  padding: 15px;
-  margin-bottom: 15px;
-}
-
-.stop-header {
+.preset-bank-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 }
 
-.stop-header span {
+.preset-bank-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #999;
+}
+
+.preset-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.preset-btn {
+  padding: 12px 8px;
+  background: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
   font-weight: 600;
-  font-size: 0.9rem;
-  color: #3a7ca5;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.1s;
+  text-transform: uppercase;
+  text-align: center;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-button.small {
-  width: auto;
-  padding: 6px 12px;
-  font-size: 0.8rem;
-  margin-bottom: 0;
+.preset-btn:hover {
+  background: #fff;
+  color: #000;
 }
 
-.btn-remove-stop {
-  background: #c53030;
-  padding: 4px 10px;
-  font-size: 0.75rem;
+.preset-btn.active {
+  background: #fff;
+  color: #000;
+  animation: blink 0.5s;
 }
 
-.btn-remove-stop:hover {
-  background: #d53040;
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-@media (max-width: 1024px) {
-  main {
+/* =====================================================
+   ACTION BUTTONS
+   ===================================================== */
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.btn {
+  padding: 12px;
+  background: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.1s;
+  text-transform: uppercase;
+}
+
+.btn:hover {
+  background: #fff;
+  color: #000;
+}
+
+.btn.btn-danger {
+  background: #fff;
+  color: #000;
+}
+
+.btn.btn-danger:hover {
+  background: #000;
+  color: #fff;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn.btn-primary {
+  background: #fff;
+  color: #000;
+  font-size: 13px;
+  padding: 16px 12px;
+}
+
+.btn.btn-primary:hover {
+  background: #000;
+  color: #fff;
+}
+
+.effect-actions .btn {
+  width: 100%;
+  padding: 16px 12px;
+}
+
+/* =====================================================
+   SCROLLBARS
+   ===================================================== */
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+  border-left: 2px solid #fff;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #fff;
+  border: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
+}
+
+/* =====================================================
+   DIALOG / MODAL
+   ===================================================== */
+
+.dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog.active {
+  display: flex;
+}
+
+.dialog-content {
+  background: #000;
+  border: 4px solid #fff;
+  padding: 24px;
+  min-width: 400px;
+  box-shadow: 0 0 0 8px #000, 0 0 0 12px #fff;
+}
+
+.dialog-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.dialog-content input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  background: #000;
+  border: 2px solid #fff;
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.dialog-content input[type="text"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff inset;
+}
+
+.dialog-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 900px) {
+  .panel-preview {
+    display: none;
+  }
+
+  .retro-main {
     grid-template-columns: 1fr;
   }
 
-  .controls {
-    max-width: 500px;
-    margin: 0 auto;
+  .panel-controls {
+    border-left: 4px solid #fff;
   }
 }
