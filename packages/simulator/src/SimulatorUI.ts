@@ -153,24 +153,6 @@ export class SimulatorUI {
             </label>
             <input type="range" id="solid-brightness" min="0" max="100" value="100" step="1">
           </div>
-
-          <div class="param-group">
-            <label class="param-label">TOPOLOGY MODE</label>
-            <div class="radio-group">
-              <div class="radio-option">
-                <input type="radio" name="solid-topology" value="singular" id="solid-topology-singular" checked>
-                <label for="solid-topology-singular">SINGULAR</label>
-              </div>
-              <div class="radio-option">
-                <input type="radio" name="solid-topology" value="circular" id="solid-topology-circular">
-                <label for="solid-topology-circular">CIRCULAR</label>
-              </div>
-              <div class="radio-option">
-                <input type="radio" name="solid-topology" value="linear" id="solid-topology-linear">
-                <label for="solid-topology-linear">LINEAR</label>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div class="effect-actions">
@@ -388,24 +370,6 @@ export class SimulatorUI {
             </label>
             <input type="range" id="strobe-brightness" min="0" max="100" value="100" step="1">
           </div>
-
-          <div class="param-group">
-            <label class="param-label">TOPOLOGY MODE</label>
-            <div class="radio-group">
-              <div class="radio-option">
-                <input type="radio" name="strobe-topology" value="singular" id="strobe-topology-singular" checked>
-                <label for="strobe-topology-singular">SINGULAR</label>
-              </div>
-              <div class="radio-option">
-                <input type="radio" name="strobe-topology" value="circular" id="strobe-topology-circular">
-                <label for="strobe-topology-circular">CIRCULAR</label>
-              </div>
-              <div class="radio-option">
-                <input type="radio" name="strobe-topology" value="linear" id="strobe-topology-linear">
-                <label for="strobe-topology-linear">LINEAR</label>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div class="effect-actions">
@@ -429,24 +393,6 @@ export class SimulatorUI {
             </label>
             <input type="range" id="blackout-duration" min="0" max="5000" value="0" step="100">
             <p style="font-size: 10px; color: #999; margin-top: 8px;">Set to 0 for instant blackout</p>
-          </div>
-
-          <div class="param-group">
-            <label class="param-label">TOPOLOGY MODE</label>
-            <div class="radio-group">
-              <div class="radio-option">
-                <input type="radio" name="blackout-topology" value="singular" id="blackout-topology-singular" checked>
-                <label for="blackout-topology-singular">SINGULAR</label>
-              </div>
-              <div class="radio-option">
-                <input type="radio" name="blackout-topology" value="circular" id="blackout-topology-circular">
-                <label for="blackout-topology-circular">CIRCULAR</label>
-              </div>
-              <div class="radio-option">
-                <input type="radio" name="blackout-topology" value="linear" id="blackout-topology-linear">
-                <label for="blackout-topology-linear">LINEAR</label>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -609,17 +555,6 @@ export class SimulatorUI {
     brightnessSlider?.addEventListener('input', () => {
       const value = document.getElementById('solid-brightness-value');
       if (value) value.textContent = `${brightnessSlider.value}%`;
-    });
-
-    // Topology radio buttons
-    const topologyRadios = document.querySelectorAll('input[name="solid-topology"]');
-    topologyRadios.forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        const target = e.target as HTMLInputElement;
-        if (this.currentEffect === 'solid') {
-          this.client.setTopology(target.value);
-        }
-      });
     });
   }
 
@@ -1332,6 +1267,17 @@ export class SimulatorUI {
    */
   private loadEffectPresetsFromStorage(): void {
     try {
+      // Default presets
+      const defaultPresets: EffectPreset[] = [
+        {"name":"Sequential / WW","effect":"sequential","topology":"linear","params":{"colorPreset":"warm","delayBetweenPanels":200,"fadeDuration":1050,"brightness":1}},
+        {"name":"Sequential / CW","effect":"sequential","topology":"linear","params":{"colorPreset":"white","delayBetweenPanels":200,"fadeDuration":1050,"brightness":1}},
+        {"name":"Flow / Slow rainbow","effect":"flow","topology":"linear","params":{"colorPreset":"rainbow","speed":0.1,"scale":0.15,"brightness":1}},
+        {"name":"Strobe / 10hz","effect":"strobe","topology":"circular","params":{"colorPreset":"white","frequency":10,"brightness":1}},
+        {"name":"Blackout - Quick","effect":"blackout","topology":"circular","params":{"transitionDuration":300}},
+        {"name":"Blackout / Instant","effect":"blackout","topology":"circular","params":{"transitionDuration":0}},
+        {"name":"Flow / Quick Chase","effect":"flow","topology":"linear","params":{"colorPreset":"breathe","speed":0.8,"scale":0.4,"brightness":1}}
+      ];
+
       const stored = localStorage.getItem('chaser-effect-presets');
       if (stored) {
         const presets: EffectPreset[] = JSON.parse(stored);
@@ -1341,7 +1287,13 @@ export class SimulatorUI {
         this.renderPresetBank();
         console.log(`✅ Loaded ${presets.length} effect presets`);
       } else {
+        // Load default presets on first run
+        defaultPresets.forEach(preset => {
+          this.effectPresets.set(preset.name, preset);
+        });
+        this.saveEffectPresetsToStorage();
         this.renderPresetBank();
+        console.log(`✅ Loaded ${defaultPresets.length} default presets`);
       }
     } catch (error) {
       console.error('Failed to load effect presets:', error);
