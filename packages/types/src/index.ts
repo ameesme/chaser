@@ -40,3 +40,9 @@ export type {
   EngineOutput,
   Config
 } from './engine.js';
+
+// Preset types
+export type {
+  EffectPreset,
+  PresetStorage
+} from './preset.js';

@@ -1,15 +1,17 @@
-import type { PanelState, EffectParams } from '@chaser/types';
+import type { PanelState, EffectParams, EffectPreset } from '@chaser/types';
 
 /**
  * Message types for client-server communication
  */
 interface ServerMessage {
-  type: 'stateUpdate' | 'connected' | 'error';
+  type: 'stateUpdate' | 'connected' | 'error'
+      | 'presetSaved' | 'presetUpdated' | 'presetDeleted' | 'presetsList';
   payload?: any;
 }
 
 interface ClientMessage {
-  type: 'runEffect' | 'stopEffect' | 'setTopology' | 'addPreset';
+  type: 'runEffect' | 'stopEffect' | 'setTopology' | 'addPreset'
+      | 'savePreset' | 'updatePreset' | 'deletePreset' | 'listPresets';
   payload?: any;
 }
 
@@ -29,12 +31,17 @@ export class WebSocketClient {
   private currentEffect: string | null = null;
   private config: any = null;
   private connected = false;
+  private presets: EffectPreset[] = [];
 
   // Callbacks
   private onStateUpdateCallbacks: Array<(panels: PanelState[], currentEffect: string | null) => void> = [];
   private onConnectedCallbacks: Array<() => void> = [];
   private onDisconnectedCallbacks: Array<() => void> = [];
   private onErrorCallbacks: Array<(error: string) => void> = [];
+  private onPresetSavedCallbacks: Array<(preset: EffectPreset) => void> = [];
+  private onPresetUpdatedCallbacks: Array<(preset: EffectPreset) => void> = [];
+  private onPresetDeletedCallbacks: Array<(id: string) => void> = [];
+  private onPresetsListCallbacks: Array<(presets: EffectPreset[]) => void> = [];
 
   constructor(serverUrl: string = 'ws://localhost:3001') {
     this.serverUrl = serverUrl;
@@ -131,6 +138,29 @@ export class WebSocketClient {
         this.panels = message.payload.panels;
         this.currentEffect = message.payload.currentEffect;
         this.onStateUpdateCallbacks.forEach(cb => cb(this.panels, this.currentEffect));
+        break;
+
+      case 'presetSaved':
+        this.presets.push(message.payload.preset);
+        this.onPresetSavedCallbacks.forEach(cb => cb(message.payload.preset));
+        break;
+
+      case 'presetUpdated':
+        const updateIndex = this.presets.findIndex(p => p.id === message.payload.preset.id);
+        if (updateIndex !== -1) {
+          this.presets[updateIndex] = message.payload.preset;
+        }
+        this.onPresetUpdatedCallbacks.forEach(cb => cb(message.payload.preset));
+        break;
+
+      case 'presetDeleted':
+        this.presets = this.presets.filter(p => p.id !== message.payload.id);
+        this.onPresetDeletedCallbacks.forEach(cb => cb(message.payload.id));
+        break;
+
+      case 'presetsList':
+        this.presets = message.payload.presets;
+        this.onPresetsListCallbacks.forEach(cb => cb(this.presets));
         break;
 
       case 'error':
@@ -248,6 +278,97 @@ export class WebSocketClient {
    */
   public onError(callback: (error: string) => void): void {
     this.onErrorCallbacks.push(callback);
+  }
+
+  /**
+   * Save a new preset
+   */
+  public savePreset(id: string, name: string, effect: string, topology: string, params: any): void {
+    this.send({
+      type: 'savePreset',
+      payload: { id, name, effect, topology, params }
+    });
+  }
+
+  /**
+   * Update an existing preset
+   */
+  public updatePreset(id: string, updates: Partial<EffectPreset>): void {
+    this.send({
+      type: 'updatePreset',
+      payload: { id, ...updates }
+    });
+  }
+
+  /**
+   * Delete a preset
+   */
+  public deletePreset(id: string): void {
+    this.send({
+      type: 'deletePreset',
+      payload: { id }
+    });
+  }
+
+  /**
+   * Request list of all presets
+   */
+  public listPresets(): void {
+    this.send({
+      type: 'listPresets'
+    });
+  }
+
+  /**
+   * Run a preset by ID
+   */
+  public runPresetById(id: string): void {
+    this.send({
+      type: 'runEffect',
+      payload: { presetId: id }
+    });
+  }
+
+  /**
+   * Get all presets (cached)
+   */
+  public getPresets(): EffectPreset[] {
+    return this.presets;
+  }
+
+  /**
+   * Get preset by ID (cached)
+   */
+  public getPresetById(id: string): EffectPreset | undefined {
+    return this.presets.find(p => p.id === id);
+  }
+
+  /**
+   * Register callback for preset saved
+   */
+  public onPresetSaved(callback: (preset: EffectPreset) => void): void {
+    this.onPresetSavedCallbacks.push(callback);
+  }
+
+  /**
+   * Register callback for preset updated
+   */
+  public onPresetUpdated(callback: (preset: EffectPreset) => void): void {
+    this.onPresetUpdatedCallbacks.push(callback);
+  }
+
+  /**
+   * Register callback for preset deleted
+   */
+  public onPresetDeleted(callback: (id: string) => void): void {
+    this.onPresetDeletedCallbacks.push(callback);
+  }
+
+  /**
+   * Register callback for presets list
+   */
+  public onPresetsList(callback: (presets: EffectPreset[]) => void): void {
+    this.onPresetsListCallbacks.push(callback);
   }
 
   /**

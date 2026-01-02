@@ -9,7 +9,7 @@ export { Engine } from './Engine.js';
 export { EffectRunner } from './EffectRunner.js';
 
 // Effects
-export { BaseEffect, SolidColorEffect, SequentialFadeEffect, FlowEffect, StrobeEffect, BlackoutEffect, ChaseEffect, WaveEffect } from './effects/index.js';
+export { BaseEffect, SolidColorEffect, SequentialFadeEffect, FlowEffect, StrobeEffect, BlackoutEffect } from './effects/index.js';
 
 // Re-export types for convenience
 export type {

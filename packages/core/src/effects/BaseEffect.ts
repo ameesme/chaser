@@ -105,4 +105,22 @@ export abstract class BaseEffect implements Effect {
   protected clamp(value: number, min: number, max: number): number {
     return Math.max(min, Math.min(max, value));
   }
+
+  /**
+   * Helper: Get color from a color preset
+   * Handles both solid and gradient presets, sampling gradients at position 0.5
+   */
+  protected getColorFromPreset(context: EffectContext, presetName: string, defaultColor?: RGBCCTColor): RGBCCTColor {
+    const preset = (context.colorManager as any).getPreset(presetName);
+
+    if (preset && preset.type === 'solid' && preset.solid) {
+      return preset.solid;
+    } else if (preset && preset.type === 'gradient' && preset.gradient) {
+      // If it's a gradient, sample the middle of it
+      return (context.colorManager as any).interpolateGradient(preset.gradient, 0.5);
+    } else {
+      // Default to white if preset not found and no default provided
+      return defaultColor || { r: 255, g: 255, b: 255, cool: 255, warm: 0 };
+    }
+  }
 }

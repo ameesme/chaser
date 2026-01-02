@@ -5,6 +5,7 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import type { EngineConfig } from '@chaser/types';
 import { ArtNetOutput, type ArtNetConfig } from './DMXOutput.js';
+import { PresetManager } from './PresetManager.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -22,12 +23,14 @@ const config: EngineConfig = {
  * Message types for client-server communication
  */
 interface ClientMessage {
-  type: 'runEffect' | 'stopEffect' | 'setTopology' | 'addPreset';
+  type: 'runEffect' | 'stopEffect' | 'setTopology' | 'addPreset'
+      | 'savePreset' | 'updatePreset' | 'deletePreset' | 'listPresets';
   payload?: any;
 }
 
 interface ServerMessage {
-  type: 'stateUpdate' | 'connected' | 'error';
+  type: 'stateUpdate' | 'connected' | 'error'
+      | 'presetSaved' | 'presetUpdated' | 'presetDeleted' | 'presetsList';
   payload?: any;
 }
 
@@ -41,6 +44,7 @@ class ChaserServer {
   private updateInterval: NodeJS.Timeout | null = null;
   private fullConfig: any;
   private artnetOutput: ArtNetOutput | null = null;
+  private presetManager: PresetManager;
 
   constructor(port: number = 3001) {
     // Store full config
@@ -74,6 +78,10 @@ class ChaserServer {
         this.engine.addOutput(this.artnetOutput);
       }
     }
+
+    // Initialize PresetManager
+    const presetsPath = resolve(__dirname, '../../../presets.json');
+    this.presetManager = new PresetManager(presetsPath);
 
     // Create WebSocket server
     this.wss = new WebSocketServer({ port });
@@ -158,6 +166,22 @@ class ChaserServer {
           );
           break;
 
+        case 'savePreset':
+          await this.handleSavePreset(ws, message.payload);
+          break;
+
+        case 'updatePreset':
+          await this.handleUpdatePreset(ws, message.payload);
+          break;
+
+        case 'deletePreset':
+          await this.handleDeletePreset(ws, message.payload);
+          break;
+
+        case 'listPresets':
+          await this.handleListPresets(ws);
+          break;
+
         default:
           this.sendToClient(ws, {
             type: 'error',
@@ -177,9 +201,31 @@ class ChaserServer {
    * Handle runEffect command
    */
   private async handleRunEffect(payload: any): Promise<void> {
-    const { effectName, params } = payload;
+    let effectName: string;
+    let params: any;
+    let topology: string | undefined;
 
-    console.log(`🎬 Running effect: ${effectName}`, params);
+    // Check if running by preset ID
+    if (payload.presetId) {
+      const preset = this.presetManager.get(payload.presetId);
+      if (!preset) {
+        throw new Error(`Preset not found: ${payload.presetId}`);
+      }
+
+      console.log(`🎬 Running preset: ${preset.name} (${preset.id})`);
+      effectName = preset.effect;
+      params = preset.params;
+      topology = preset.topology;
+    } else {
+      effectName = payload.effectName;
+      params = payload.params;
+      console.log(`🎬 Running effect: ${effectName}`, params);
+    }
+
+    // Set topology if provided
+    if (topology) {
+      this.engine.getPanelGrid().setTopologyMode(topology);
+    }
 
     // Map effect name to effect class
     const effectModule = await import('@chaser/core');
@@ -188,9 +234,7 @@ class ChaserServer {
       'sequential': effectModule.SequentialFadeEffect,
       'flow': effectModule.FlowEffect,
       'strobe': effectModule.StrobeEffect,
-      'blackout': effectModule.BlackoutEffect,
-      'chase': effectModule.ChaseEffect,
-      'wave': effectModule.WaveEffect
+      'blackout': effectModule.BlackoutEffect
     };
 
     const EffectClass = effectMap[effectName];
@@ -200,6 +244,76 @@ class ChaserServer {
 
     const effect = new EffectClass();
     this.engine.runEffect(effect, params);
+  }
+
+  /**
+   * Handle savePreset command
+   */
+  private async handleSavePreset(ws: WebSocket, payload: any): Promise<void> {
+    const { id, name, effect, topology, params } = payload;
+
+    try {
+      const preset = this.presetManager.create({ id, name, effect, topology, params });
+      this.sendToClient(ws, {
+        type: 'presetSaved',
+        payload: { preset }
+      });
+    } catch (error) {
+      throw new Error(`Failed to save preset: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Handle updatePreset command
+   */
+  private async handleUpdatePreset(ws: WebSocket, payload: any): Promise<void> {
+    const { id, ...updates } = payload;
+
+    try {
+      const preset = this.presetManager.update(id, updates);
+      if (!preset) {
+        throw new Error(`Preset not found: ${id}`);
+      }
+
+      this.sendToClient(ws, {
+        type: 'presetUpdated',
+        payload: { preset }
+      });
+    } catch (error) {
+      throw new Error(`Failed to update preset: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Handle deletePreset command
+   */
+  private async handleDeletePreset(ws: WebSocket, payload: any): Promise<void> {
+    const { id } = payload;
+
+    try {
+      const success = this.presetManager.delete(id);
+      if (!success) {
+        throw new Error(`Preset not found: ${id}`);
+      }
+
+      this.sendToClient(ws, {
+        type: 'presetDeleted',
+        payload: { id }
+      });
+    } catch (error) {
+      throw new Error(`Failed to delete preset: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Handle listPresets command
+   */
+  private async handleListPresets(ws: WebSocket): Promise<void> {
+    const presets = this.presetManager.getAll();
+    this.sendToClient(ws, {
+      type: 'presetsList',
+      payload: { presets }
+    });
   }
 
   /**

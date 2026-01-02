@@ -24,17 +24,7 @@ export class SolidColorEffect extends BaseEffect {
 
     // Get target color from preset
     const presetName = (context.params.colorPreset as string) || this.defaultParams.colorPreset;
-    const preset = (context.colorManager as any).getPreset(presetName);
-
-    if (preset && preset.type === 'solid' && preset.solid) {
-      this.targetColor = preset.solid;
-    } else if (preset && preset.type === 'gradient' && preset.gradient) {
-      // If it's a gradient, sample the middle of it
-      this.targetColor = (context.colorManager as any).interpolateGradient(preset.gradient, 0.5);
-    } else {
-      // Default to white if preset not found
-      this.targetColor = { r: 255, g: 255, b: 255, cool: 255, warm: 0 };
-    }
+    this.targetColor = this.getColorFromPreset(context, presetName);
 
     // Get start color if provided
     if (context.params.startColor) {

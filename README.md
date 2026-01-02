@@ -193,6 +193,57 @@ For 14 panels starting at channel 1:
 
 Saved presets appear as square pads in the preset bank at the bottom of the interface. Click any preset to instantly load and run that effect configuration.
 
+#### Server-Side Preset Storage
+
+Effect presets are stored server-side in `presets.json` (project root), making them available across devices and sessions:
+
+**Creating Presets:**
+1. Configure your desired effect parameters
+2. Click "SAVE AS PRESET"
+3. Enter a unique ID (e.g., `my-cool-effect`) and display name
+4. IDs are automatically sanitized: lowercase, spaces→hyphens, alphanumeric only
+
+**Managing Presets:**
+- **Load**: Click any preset pad to execute it
+- **Delete**: Right-click on user presets (protected defaults cannot be deleted)
+- **Protected Presets**: 7 built-in presets marked with "(PROTECTED)" are permanent
+
+**Backup/Restore:**
+- Presets file: `/presets.json` in project root
+- Simply copy this file to backup or transfer presets
+
+**Running Presets via WebSocket:**
+```typescript
+// Run preset by ID
+{
+  type: 'runEffect',
+  payload: { presetId: 'flow-slow-rainbow' }
+}
+
+// List all presets
+{
+  type: 'listPresets'
+}
+
+// Save new preset
+{
+  type: 'savePreset',
+  payload: {
+    id: 'my-preset',
+    name: 'My Custom Effect',
+    effect: 'flow',
+    topology: 'linear',
+    params: { colorPreset: 'rainbow', speed: 0.5, scale: 0.3, brightness: 1 }
+  }
+}
+
+// Delete preset
+{
+  type: 'deletePreset',
+  payload: { id: 'my-preset' }
+}
+```
+
 ### Custom Gradients
 
 For Flow effects:

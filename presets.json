@@ -1,0 +1,103 @@
+{
+  "version": "1.0",
+  "presets": [
+    {
+      "id": "sequential-ww",
+      "name": "Sequential / WW",
+      "effect": "sequential",
+      "topology": "linear",
+      "params": {
+        "colorPreset": "warm",
+        "delayBetweenPanels": 200,
+        "fadeDuration": 1050,
+        "brightness": 1
+      },
+      "createdAt": 1767277235140,
+      "updatedAt": 1767277235140,
+      "isProtected": true
+    },
+    {
+      "id": "sequential-cw",
+      "name": "Sequential / CW",
+      "effect": "sequential",
+      "topology": "linear",
+      "params": {
+        "colorPreset": "white",
+        "delayBetweenPanels": 200,
+        "fadeDuration": 1050,
+        "brightness": 1
+      },
+      "createdAt": 1767277235140,
+      "updatedAt": 1767277235140,
+      "isProtected": true
+    },
+    {
+      "id": "flow-slow-rainbow",
+      "name": "Flow / Slow rainbow",
+      "effect": "flow",
+      "topology": "linear",
+      "params": {
+        "colorPreset": "rainbow",
+        "speed": 0.1,
+        "scale": 0.15,
+        "brightness": 1
+      },
+      "createdAt": 1767277235140,
+      "updatedAt": 1767277235140,
+      "isProtected": true
+    },
+    {
+      "id": "strobe-10hz",
+      "name": "Strobe / 10hz",
+      "effect": "strobe",
+      "topology": "circular",
+      "params": {
+        "colorPreset": "white",
+        "frequency": 10,
+        "brightness": 1
+      },
+      "createdAt": 1767277235140,
+      "updatedAt": 1767277235140,
+      "isProtected": true
+    },
+    {
+      "id": "blackout-quick",
+      "name": "Blackout - Quick",
+      "effect": "blackout",
+      "topology": "circular",
+      "params": {
+        "transitionDuration": 300
+      },
+      "createdAt": 1767277235140,
+      "updatedAt": 1767277235140,
+      "isProtected": true
+    },
+    {
+      "id": "blackout-instant",
+      "name": "Blackout / Instant",
+      "effect": "blackout",
+      "topology": "circular",
+      "params": {
+        "transitionDuration": 0
+      },
+      "createdAt": 1767277235140,
+      "updatedAt": 1767277235140,
+      "isProtected": true
+    },
+    {
+      "id": "flow-quick-chase",
+      "name": "Flow / Quick Chase",
+      "effect": "flow",
+      "topology": "linear",
+      "params": {
+        "colorPreset": "breathe",
+        "speed": 0.8,
+        "scale": 0.4,
+        "brightness": 1
+      },
+      "createdAt": 1767277235140,
+      "updatedAt": 1767277235140,
+      "isProtected": true
+    }
+  ]
+}

@@ -1,13 +1,7 @@
 import type { WebSocketClient } from './WebSocketClient.js';
+import type { EffectPreset } from '@chaser/types';
 
 type EffectType = 'solid' | 'sequential' | 'flow' | 'strobe' | 'blackout';
-
-interface EffectPreset {
-  name: string;
-  effect: EffectType;
-  topology: string;
-  params: any;
-}
 
 /**
  * Simulator UI controls with effect-specific parameter sections
@@ -16,7 +10,7 @@ export class SimulatorUI {
   private client: WebSocketClient;
   private container: HTMLElement;
   private currentEffect: EffectType | null = null;
-  private effectPresets: Map<string, EffectPreset> = new Map();
+  private effectPresets: EffectPreset[] = [];
 
   // Gradient editor state
   private gradientStops: Array<{
@@ -28,9 +22,40 @@ export class SimulatorUI {
   constructor(client: WebSocketClient, container: HTMLElement) {
     this.client = client;
     this.container = container;
+
+    // Register preset callbacks
+    this.client.onPresetsList((presets) => {
+      this.effectPresets = presets;
+      this.renderPresetBank();
+    });
+
+    this.client.onPresetSaved((preset) => {
+      // Dedupe: only add if not already present
+      if (!this.effectPresets.find(p => p.id === preset.id)) {
+        this.effectPresets.push(preset);
+      }
+      this.renderPresetBank();
+    });
+
+    this.client.onPresetUpdated((preset) => {
+      const index = this.effectPresets.findIndex(p => p.id === preset.id);
+      if (index !== -1) {
+        this.effectPresets[index] = preset;
+      }
+      this.renderPresetBank();
+    });
+
+    this.client.onPresetDeleted((id) => {
+      this.effectPresets = this.effectPresets.filter(p => p.id !== id);
+      this.renderPresetBank();
+    });
+
     this.initializeDefaultGradient();
     this.buildUI();
     this.attachEventListeners();
+
+    // Fetch presets from server
+    this.client.listPresets();
   }
 
   /**
@@ -99,7 +124,8 @@ export class SimulatorUI {
       <div id="effect-preset-dialog" class="dialog">
         <div class="dialog-content">
           <div class="dialog-title">SAVE PRESET</div>
-          <input type="text" id="effect-preset-name-input" placeholder="Preset name..." />
+          <input type="text" id="effect-preset-id-input" placeholder="Preset ID (e.g., my-preset)..." />
+          <input type="text" id="effect-preset-name-input" placeholder="Display name..." />
           <div class="dialog-buttons">
             <button id="btn-effect-preset-confirm" class="btn">SAVE</button>
             <button id="btn-effect-preset-cancel" class="btn">CANCEL</button>
@@ -431,9 +457,6 @@ export class SimulatorUI {
 
     // Blackout effect listeners
     this.attachBlackoutListeners();
-
-    // Load saved presets from localStorage
-    this.loadEffectPresetsFromStorage();
 
     // Show first tab by default
     this.switchToTab('solid');
@@ -1106,25 +1129,32 @@ export class SimulatorUI {
     }
 
     const dialog = document.getElementById('effect-preset-dialog');
-    const input = document.getElementById('effect-preset-name-input') as HTMLInputElement;
+    const idInput = document.getElementById('effect-preset-id-input') as HTMLInputElement;
+    const nameInput = document.getElementById('effect-preset-name-input') as HTMLInputElement;
 
-    if (!dialog || !input) {
-      console.error('Dialog or input not found', { dialog, input });
+    if (!dialog || !idInput || !nameInput) {
+      console.error('Dialog or inputs not found', { dialog, idInput, nameInput });
       return;
     }
 
-    input.value = '';
+    idInput.value = '';
+    nameInput.value = '';
     dialog.classList.add('active');
 
     const confirmBtn = document.getElementById('btn-effect-preset-confirm');
     const cancelBtn = document.getElementById('btn-effect-preset-cancel');
 
     const confirm = () => {
-      const name = input.value.trim();
-      if (name) {
-        this.saveEffectPreset(name);
-        dialog.classList.remove('active');
+      const id = idInput.value.trim();
+      const name = nameInput.value.trim();
+
+      if (!id || !name) {
+        alert('Please provide both ID and name');
+        return;
       }
+
+      this.saveEffectPreset(id, name);
+      dialog.classList.remove('active');
       confirmBtn?.removeEventListener('click', confirm);
       cancelBtn?.removeEventListener('click', cancel);
     };
@@ -1142,7 +1172,7 @@ export class SimulatorUI {
   /**
    * Save current effect configuration as a preset
    */
-  private saveEffectPreset(name: string): void {
+  private saveEffectPreset(id: string, name: string): void {
     if (!this.currentEffect) return;
 
     // Get current topology from effect-specific radio buttons
@@ -1152,29 +1182,17 @@ export class SimulatorUI {
     // Get current effect parameters
     const params = this.getCurrentEffectParams();
 
-    // Create preset
-    const preset: EffectPreset = {
-      name,
-      effect: this.currentEffect,
-      topology,
-      params
-    };
+    // Send to server
+    this.client.savePreset(id, name, this.currentEffect, topology, params);
 
-    // Save to map and localStorage
-    this.effectPresets.set(name, preset);
-    this.saveEffectPresetsToStorage();
-
-    // Update preset bank UI
-    this.renderPresetBank();
-
-    console.log(`✅ Saved effect preset: ${name}`);
+    console.log(`✅ Saving effect preset: ${name} (${id})`);
   }
 
   /**
    * Load and execute an effect preset
    */
-  private loadEffectPreset(name: string): void {
-    const preset = this.effectPresets.get(name);
+  private loadEffectPreset(id: string): void {
+    const preset = this.effectPresets.find(p => p.id === id);
     if (!preset) return;
 
     // Switch to the preset's effect tab
@@ -1184,14 +1202,13 @@ export class SimulatorUI {
     const topologyRadio = document.querySelector(`input[name="${preset.effect}-topology"][value="${preset.topology}"]`) as HTMLInputElement;
     if (topologyRadio) {
       topologyRadio.checked = true;
-      this.client.setTopology(preset.topology);
     }
 
     // Set parameters based on effect type
     this.setEffectParameters(preset.effect, preset.params);
 
-    // Run the effect
-    this.client.runEffect(preset.effect, preset.params);
+    // Run the preset by ID
+    this.client.runPresetById(id);
   }
 
   /**
@@ -1206,16 +1223,21 @@ export class SimulatorUI {
   /**
    * Delete an effect preset
    */
-  private deleteEffectPreset(name: string): void {
-    if (!confirm(`Delete preset "${name}"?`)) return;
+  private deleteEffectPreset(id: string): void {
+    const preset = this.effectPresets.find(p => p.id === id);
+    if (!preset) return;
 
-    this.effectPresets.delete(name);
-    this.saveEffectPresetsToStorage();
+    // Check if protected
+    if (preset.isProtected) {
+      alert(`Cannot delete protected preset: ${preset.name}`);
+      return;
+    }
 
-    // Update preset bank UI
-    this.renderPresetBank();
+    if (!confirm(`Delete preset "${preset.name}"?`)) return;
 
-    console.log(`🗑️ Deleted effect preset: ${name}`);
+    this.client.deletePreset(id);
+
+    console.log(`🗑️ Deleting effect preset: ${preset.name} (${id})`);
   }
 
   /**
@@ -1227,79 +1249,41 @@ export class SimulatorUI {
 
     container.innerHTML = '';
 
-    if (this.effectPresets.size === 0) {
+    if (this.effectPresets.length === 0) {
       container.innerHTML = '<p style="color: #666; font-size: 11px; padding: 8px 0;">No saved presets</p>';
       return;
     }
 
-    this.effectPresets.forEach((preset, name) => {
+    this.effectPresets.forEach((preset) => {
       const button = document.createElement('button');
       button.className = 'preset-btn';
-      button.textContent = name;
-      button.title = `${preset.effect.toUpperCase()} - ${preset.topology}`;
+      button.textContent = preset.name;
+      button.title = `${preset.effect.toUpperCase()} - ${preset.topology}${preset.isProtected ? ' (PROTECTED)' : ''}`;
+
+      // Add visual indicator for protected presets
+      if (preset.isProtected) {
+        button.style.borderColor = '#888';
+        button.style.opacity = '0.8';
+      }
 
       button.addEventListener('click', () => {
-        this.loadEffectPreset(name);
+        this.loadEffectPreset(preset.id);
         button.classList.add('active');
         setTimeout(() => button.classList.remove('active'), 500);
       });
 
-      // Right-click to delete
-      button.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        this.deleteEffectPreset(name);
-      });
+      // Right-click to delete (only if not protected)
+      if (!preset.isProtected) {
+        button.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          this.deleteEffectPreset(preset.id);
+        });
+      }
 
       container.appendChild(button);
     });
   }
 
-  /**
-   * Save effect presets to localStorage
-   */
-  private saveEffectPresetsToStorage(): void {
-    const presets = Array.from(this.effectPresets.values());
-    localStorage.setItem('chaser-effect-presets', JSON.stringify(presets));
-  }
-
-  /**
-   * Load effect presets from localStorage
-   */
-  private loadEffectPresetsFromStorage(): void {
-    try {
-      // Default presets
-      const defaultPresets: EffectPreset[] = [
-        {"name":"Sequential / WW","effect":"sequential","topology":"linear","params":{"colorPreset":"warm","delayBetweenPanels":200,"fadeDuration":1050,"brightness":1}},
-        {"name":"Sequential / CW","effect":"sequential","topology":"linear","params":{"colorPreset":"white","delayBetweenPanels":200,"fadeDuration":1050,"brightness":1}},
-        {"name":"Flow / Slow rainbow","effect":"flow","topology":"linear","params":{"colorPreset":"rainbow","speed":0.1,"scale":0.15,"brightness":1}},
-        {"name":"Strobe / 10hz","effect":"strobe","topology":"circular","params":{"colorPreset":"white","frequency":10,"brightness":1}},
-        {"name":"Blackout - Quick","effect":"blackout","topology":"circular","params":{"transitionDuration":300}},
-        {"name":"Blackout / Instant","effect":"blackout","topology":"circular","params":{"transitionDuration":0}},
-        {"name":"Flow / Quick Chase","effect":"flow","topology":"linear","params":{"colorPreset":"breathe","speed":0.8,"scale":0.4,"brightness":1}}
-      ];
-
-      const stored = localStorage.getItem('chaser-effect-presets');
-      if (stored) {
-        const presets: EffectPreset[] = JSON.parse(stored);
-        presets.forEach(preset => {
-          this.effectPresets.set(preset.name, preset);
-        });
-        this.renderPresetBank();
-        console.log(`✅ Loaded ${presets.length} effect presets`);
-      } else {
-        // Load default presets on first run
-        defaultPresets.forEach(preset => {
-          this.effectPresets.set(preset.name, preset);
-        });
-        this.saveEffectPresetsToStorage();
-        this.renderPresetBank();
-        console.log(`✅ Loaded ${defaultPresets.length} default presets`);
-      }
-    } catch (error) {
-      console.error('Failed to load effect presets:', error);
-      this.renderPresetBank();
-    }
-  }
 
   /**
    * Update status display

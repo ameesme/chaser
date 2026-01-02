@@ -39,8 +39,6 @@ export class BlackoutEffect extends BaseEffect {
     const easedProgress = this.easeInOut(progress);
 
     // Fade from current state to black
-    const blackColor = { r: 0, g: 0, b: 0, cool: 0, warm: 0 };
-
     return this.startStates.map((startState) => {
       // Interpolate each color channel from start to black
       const color = {
@@ -54,13 +52,7 @@ export class BlackoutEffect extends BaseEffect {
       // Also fade brightness
       const brightness = startState.brightness * (1 - easedProgress);
 
-      return { color, brightness };
+      return { color, brightness, timestamp: Date.now() };
     });
-  }
-
-  isComplete(context: EffectContext): boolean {
-    const elapsed = this.getElapsedSinceStart(context);
-    const duration = (context.params.transitionDuration as number) ?? this.defaultParams.transitionDuration;
-    return elapsed >= duration;
   }
 }
