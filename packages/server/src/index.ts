@@ -224,7 +224,7 @@ class ChaserServer {
 
     // Set topology if provided
     if (topology) {
-      this.engine.getPanelGrid().setTopologyMode(topology);
+      this.engine.getPanelGrid().setTopologyMode(topology as any);
     }
 
     // Map effect name to effect class
@@ -234,7 +234,8 @@ class ChaserServer {
       'sequential': effectModule.SequentialFadeEffect,
       'flow': effectModule.FlowEffect,
       'strobe': effectModule.StrobeEffect,
-      'blackout': effectModule.BlackoutEffect
+      'blackout': effectModule.BlackoutEffect,
+      'static': effectModule.StaticEffect
     };
 
     const EffectClass = effectMap[effectName];

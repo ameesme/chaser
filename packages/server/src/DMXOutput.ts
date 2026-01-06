@@ -59,7 +59,7 @@ export class ArtNetOutput implements EngineOutput {
   /**
    * Render panel states to Art-Net DMX
    */
-  render(states: PanelState[], topology: PanelTopology): void {
+  render(states: PanelState[], _topology: PanelTopology): void {
     if (!this.config.enabled || !this.socket) {
       return;
     }

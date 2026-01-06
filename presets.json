@@ -98,6 +98,168 @@
       "createdAt": 1767277235140,
       "updatedAt": 1767277235140,
       "isProtected": true
+    },
+    {
+      "id": "warm-1",
+      "name": "Static / Warm 1",
+      "effect": "static",
+      "topology": "circular",
+      "params": {
+        "panelColors": [
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 255
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          },
+          {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "cool": 0,
+            "warm": 0
+          }
+        ],
+        "brightness": 1
+      },
+      "createdAt": 1767612643915,
+      "updatedAt": 1767612643915,
+      "isProtected": false
+    },
+    {
+      "id": "flow-1-by-1",
+      "name": "Flow / 1-by-1",
+      "effect": "flow",
+      "topology": "linear",
+      "params": {
+        "colorPreset": "flow-custom",
+        "speed": 0.5,
+        "scale": 1,
+        "brightness": 1,
+        "customGradient": {
+          "colorSpace": "rgb",
+          "stops": [
+            {
+              "position": 0,
+              "color": {
+                "r": 0,
+                "g": 0,
+                "b": 0,
+                "cool": 255,
+                "warm": 0
+              }
+            },
+            {
+              "position": 0.2,
+              "color": {
+                "r": 0,
+                "g": 0,
+                "b": 0,
+                "cool": 0,
+                "warm": 0
+              }
+            },
+            {
+              "position": 1,
+              "color": {
+                "r": 0,
+                "g": 0,
+                "b": 0,
+                "cool": 0,
+                "warm": 0
+              }
+            }
+          ]
+        }
+      },
+      "createdAt": 1767613183931,
+      "updatedAt": 1767613183931,
+      "isProtected": false
     }
   ]
 }

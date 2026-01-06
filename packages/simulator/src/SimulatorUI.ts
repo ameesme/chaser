@@ -1,7 +1,7 @@
 import type { WebSocketClient } from './WebSocketClient.js';
 import type { EffectPreset } from '@chaser/types';
 
-type EffectType = 'solid' | 'sequential' | 'flow' | 'strobe' | 'blackout';
+type EffectType = 'solid' | 'sequential' | 'flow' | 'strobe' | 'blackout' | 'static';
 
 /**
  * Simulator UI controls with effect-specific parameter sections
@@ -18,6 +18,10 @@ export class SimulatorUI {
     color: { r: number; g: number; b: number; cool: number; warm: number };
   }> = [];
   private gradientColorSpace: 'rgb' | 'hsv' = 'rgb';
+
+  // Static effect state
+  private staticPanelColors: Array<{ r: number; g: number; b: number; cool: number; warm: number }> = [];
+  private panelCount: number = 0;
 
   constructor(client: WebSocketClient, container: HTMLElement) {
     this.client = client;
@@ -51,11 +55,29 @@ export class SimulatorUI {
     });
 
     this.initializeDefaultGradient();
+    this.initializeStaticEffect();
     this.buildUI();
     this.attachEventListeners();
 
     // Fetch presets from server
     this.client.listPresets();
+  }
+
+  /**
+   * Initialize static effect with panel count from config
+   */
+  private initializeStaticEffect(): void {
+    const config = this.client.getConfig();
+    if (config && config.engine) {
+      const columns = config.engine.columns || 2;
+      const rowsPerColumn = config.engine.rowsPerColumn || 7;
+      this.panelCount = columns * rowsPerColumn;
+
+      // Initialize all panels to black
+      this.staticPanelColors = Array(this.panelCount).fill(null).map(() => ({
+        r: 0, g: 0, b: 0, cool: 0, warm: 0
+      }));
+    }
   }
 
   /**
@@ -80,6 +102,7 @@ export class SimulatorUI {
         <button class="effect-tab" data-effect="flow">FLOW</button>
         <button class="effect-tab" data-effect="strobe">STROBE</button>
         <button class="effect-tab" data-effect="blackout">BLACKOUT</button>
+        <button class="effect-tab" data-effect="static">STATIC</button>
       </div>
 
       <!-- Effect Parameters Container -->
@@ -107,6 +130,11 @@ export class SimulatorUI {
         <!-- Blackout Effect Parameters -->
         <div class="effect-params" id="params-blackout">
           ${this.buildBlackoutParams()}
+        </div>
+
+        <!-- Static Effect Parameters -->
+        <div class="effect-params" id="params-static">
+          ${this.buildStaticParams()}
         </div>
       </div>
 
@@ -431,6 +459,95 @@ export class SimulatorUI {
   }
 
   /**
+   * Calculate display color for preview (handles RGBCCT properly)
+   */
+  private getDisplayColorForPreview(color: { r: number; g: number; b: number; cool: number; warm: number }): string {
+    const hasRGB = color.r > 0 || color.g > 0 || color.b > 0;
+
+    if (!hasRGB && (color.cool > 0 || color.warm > 0)) {
+      // Pure white channels - show as white/warm white
+      if (color.cool > 0 && color.warm === 0) {
+        return '#e0f0ff'; // Cool white - bluish tint
+      } else if (color.warm > 0 && color.cool === 0) {
+        return '#fff5e0'; // Warm white - yellowish tint
+      } else {
+        return '#ffffff'; // Both cool and warm - neutral white
+      }
+    } else {
+      // Has RGB values, show them
+      return this.rgbToHex(color.r, color.g, color.b);
+    }
+  }
+
+  /**
+   * Build Static effect parameters HTML with collapsible panel pickers
+   */
+  private buildStaticParams(): string {
+    const panelItems = Array(this.panelCount).fill(null).map((_, index) => {
+      const color = this.staticPanelColors[index] || { r: 0, g: 0, b: 0, cool: 0, warm: 0 };
+      const colorHex = this.getDisplayColorForPreview(color);
+
+      return `
+        <div class="static-panel-item" data-panel="${index}">
+          <div class="static-panel-header" data-panel="${index}">
+            <span class="static-panel-number">PANEL ${index}</span>
+            <div class="static-panel-preview" style="background: ${colorHex}; border: 1px solid #333;"></div>
+            <span class="static-panel-toggle">▶</span>
+          </div>
+          <div class="static-panel-content" data-panel="${index}" style="display: none;">
+            <div class="param-group">
+              <label class="param-label">COLOR PRESET</label>
+              <select id="static-${index}-preset" class="static-preset-select" data-panel="${index}">
+                <option value="off">Off / Black</option>
+                <option value="white">White</option>
+                <option value="warm">Warm White</option>
+                <option value="custom">Custom Color</option>
+              </select>
+            </div>
+
+            <div class="param-group static-custom-group" id="static-${index}-custom-group" style="display: none;">
+              <label class="param-label">RGB COLOR</label>
+              <input type="color" id="static-${index}-rgb-color" class="static-rgb-color" data-panel="${index}" value="${colorHex}">
+
+              <label class="param-label" style="margin-top: 16px;">
+                COOL WHITE <span class="param-value" id="static-${index}-cool-value">${color.cool}</span>
+              </label>
+              <input type="range" id="static-${index}-cool" class="static-cool" data-panel="${index}" min="0" max="255" value="${color.cool}">
+
+              <label class="param-label" style="margin-top: 16px;">
+                WARM WHITE <span class="param-value" id="static-${index}-warm-value">${color.warm}</span>
+              </label>
+              <input type="range" id="static-${index}-warm" class="static-warm" data-panel="${index}" min="0" max="255" value="${color.warm}">
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="effect-layout">
+        <div class="effect-parameters">
+          <div class="param-group">
+            <label class="param-label">
+              BRIGHTNESS <span class="param-value" id="static-brightness-value">100%</span>
+            </label>
+            <input type="range" id="static-brightness" min="0" max="100" value="100" step="1">
+          </div>
+
+          <div class="static-panels-list">
+            ${panelItems}
+          </div>
+        </div>
+
+        <div class="effect-actions">
+          <button class="btn btn-primary" id="btn-static-run">RUN EFFECT</button>
+          <button class="btn" id="btn-static-save">SAVE AS PRESET</button>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
    * Attach event listeners for tab-based layout
    */
   private attachEventListeners(): void {
@@ -457,6 +574,9 @@ export class SimulatorUI {
 
     // Blackout effect listeners
     this.attachBlackoutListeners();
+
+    // Static effect listeners
+    this.attachStaticListeners();
 
     // Show first tab by default
     this.switchToTab('solid');
@@ -521,6 +641,8 @@ export class SimulatorUI {
         return this.getStrobeParams();
       case 'blackout':
         return this.getBlackoutParams();
+      case 'static':
+        return this.getStaticParams();
       default:
         return {};
     }
@@ -602,13 +724,20 @@ export class SimulatorUI {
       const cool = parseInt(coolInput?.value || '0');
       const warm = parseInt(warmInput?.value || '0');
 
+      const customColor = { r, g, b, cool, warm };
+
       // Register custom preset
       this.client.addPreset('custom', {
         type: 'solid',
-        solid: { r, g, b, cool, warm }
+        solid: customColor
       });
 
-      return { colorPreset: 'custom', transitionDuration, brightness };
+      return {
+        colorPreset: 'custom',
+        transitionDuration,
+        brightness,
+        customColor // Include custom color in params so it can be restored
+      };
     }
 
     return { colorPreset: preset || 'white', transitionDuration, brightness };
@@ -709,12 +838,20 @@ export class SimulatorUI {
       const cool = parseInt(coolInput?.value || '0');
       const warm = parseInt(warmInput?.value || '0');
 
+      const customColor = { r, g, b, cool, warm };
+
       this.client.addPreset('sequential-custom', {
         type: 'solid',
-        solid: { r, g, b, cool, warm }
+        solid: customColor
       });
 
-      return { colorPreset: 'sequential-custom', delayBetweenPanels, fadeDuration, brightness };
+      return {
+        colorPreset: 'sequential-custom',
+        delayBetweenPanels,
+        fadeDuration,
+        brightness,
+        customColor // Include custom color in params so it can be restored
+      };
     }
 
     return { colorPreset: preset || 'white', delayBetweenPanels, fadeDuration, brightness };
@@ -806,7 +943,18 @@ export class SimulatorUI {
 
     if (preset === 'custom') {
       this.applyCustomGradient('flow-custom');
-      return { colorPreset: 'flow-custom', speed, scale, brightness };
+      // Include gradient definition in params so it can be restored from preset
+      const sortedStops = [...this.gradientStops].sort((a, b) => a.position - b.position);
+      return {
+        colorPreset: 'flow-custom',
+        speed,
+        scale,
+        brightness,
+        customGradient: {
+          colorSpace: this.gradientColorSpace,
+          stops: sortedStops
+        }
+      };
     }
 
     return { colorPreset: preset || 'rainbow', speed, scale, brightness };
@@ -899,12 +1047,19 @@ export class SimulatorUI {
       const cool = parseInt(coolInput?.value || '0');
       const warm = parseInt(warmInput?.value || '0');
 
+      const customColor = { r, g, b, cool, warm };
+
       this.client.addPreset('strobe-custom', {
         type: 'solid',
-        solid: { r, g, b, cool, warm }
+        solid: customColor
       });
 
-      return { colorPreset: 'strobe-custom', frequency, brightness };
+      return {
+        colorPreset: 'strobe-custom',
+        frequency,
+        brightness,
+        customColor // Include custom color in params so it can be restored
+      };
     }
 
     return { colorPreset: preset || 'white', frequency, brightness };
@@ -946,6 +1101,170 @@ export class SimulatorUI {
     const durationInput = document.getElementById('blackout-duration') as HTMLInputElement;
     const transitionDuration = parseInt(durationInput?.value || '0');
     return { transitionDuration };
+  }
+
+  /**
+   * Attach Static effect listeners
+   */
+  private attachStaticListeners(): void {
+    // Run button
+    document.getElementById('btn-static-run')?.addEventListener('click', () => {
+      this.runEffect('static');
+    });
+
+    // Save button
+    document.getElementById('btn-static-save')?.addEventListener('click', () => {
+      this.showEffectPresetDialog();
+    });
+
+    // Brightness slider
+    const brightnessSlider = document.getElementById('static-brightness') as HTMLInputElement;
+    brightnessSlider?.addEventListener('input', () => {
+      const value = document.getElementById('static-brightness-value');
+      if (value) value.textContent = `${brightnessSlider.value}%`;
+    });
+
+    // Panel header click to toggle
+    const panelHeaders = document.querySelectorAll('.static-panel-header');
+    panelHeaders.forEach(header => {
+      header.addEventListener('click', (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const panelIndex = parseInt(target.dataset.panel || '0');
+        this.toggleStaticPanel(panelIndex);
+      });
+    });
+
+    // Preset selectors
+    const presetSelects = document.querySelectorAll('.static-preset-select');
+    presetSelects.forEach(select => {
+      select.addEventListener('change', (e) => {
+        const target = e.target as HTMLSelectElement;
+        const panelIndex = parseInt(target.dataset.panel || '0');
+        const customGroup = document.getElementById(`static-${panelIndex}-custom-group`);
+
+        if (target.value === 'custom') {
+          if (customGroup) customGroup.style.display = 'block';
+        } else {
+          if (customGroup) customGroup.style.display = 'none';
+          this.updateStaticPanelColor(panelIndex, target.value);
+        }
+      });
+    });
+
+    // RGB color pickers
+    const rgbColorPickers = document.querySelectorAll('.static-rgb-color');
+    rgbColorPickers.forEach(picker => {
+      picker.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        const panelIndex = parseInt(target.dataset.panel || '0');
+        const hex = target.value;
+        const r = parseInt(hex.substring(1, 3), 16);
+        const g = parseInt(hex.substring(3, 5), 16);
+        const b = parseInt(hex.substring(5, 7), 16);
+
+        this.staticPanelColors[panelIndex] = {
+          ...this.staticPanelColors[panelIndex],
+          r, g, b
+        };
+        this.updateStaticPanelPreview(panelIndex);
+      });
+    });
+
+    // Cool white sliders
+    const coolSliders = document.querySelectorAll('.static-cool');
+    coolSliders.forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        const panelIndex = parseInt(target.dataset.panel || '0');
+        const coolValue = parseInt(target.value);
+
+        this.staticPanelColors[panelIndex] = {
+          ...this.staticPanelColors[panelIndex],
+          cool: coolValue
+        };
+
+        const valueDisplay = document.getElementById(`static-${panelIndex}-cool-value`);
+        if (valueDisplay) valueDisplay.textContent = target.value;
+        this.updateStaticPanelPreview(panelIndex);
+      });
+    });
+
+    // Warm white sliders
+    const warmSliders = document.querySelectorAll('.static-warm');
+    warmSliders.forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        const panelIndex = parseInt(target.dataset.panel || '0');
+        const warmValue = parseInt(target.value);
+
+        this.staticPanelColors[panelIndex] = {
+          ...this.staticPanelColors[panelIndex],
+          warm: warmValue
+        };
+
+        const valueDisplay = document.getElementById(`static-${panelIndex}-warm-value`);
+        if (valueDisplay) valueDisplay.textContent = target.value;
+        this.updateStaticPanelPreview(panelIndex);
+      });
+    });
+  }
+
+  /**
+   * Toggle expand/collapse for a static panel picker
+   */
+  private toggleStaticPanel(panelIndex: number): void {
+    const content = document.querySelector(`.static-panel-content[data-panel="${panelIndex}"]`) as HTMLElement;
+    const toggle = document.querySelector(`.static-panel-header[data-panel="${panelIndex}"] .static-panel-toggle`) as HTMLElement;
+
+    if (content && toggle) {
+      const isExpanded = content.style.display !== 'none';
+      content.style.display = isExpanded ? 'none' : 'block';
+      toggle.textContent = isExpanded ? '▶' : '▼';
+    }
+  }
+
+  /**
+   * Update panel color from preset
+   */
+  private updateStaticPanelColor(panelIndex: number, presetName: string): void {
+    // Default colors for presets
+    const presets: Record<string, any> = {
+      off: { r: 0, g: 0, b: 0, cool: 0, warm: 0 },
+      white: { r: 0, g: 0, b: 0, cool: 255, warm: 0 },
+      warm: { r: 0, g: 0, b: 0, cool: 0, warm: 255 }
+    };
+
+    const color = presets[presetName];
+    if (color) {
+      this.staticPanelColors[panelIndex] = color;
+      this.updateStaticPanelPreview(panelIndex);
+    }
+  }
+
+  /**
+   * Update the color preview swatch for a panel
+   */
+  private updateStaticPanelPreview(panelIndex: number): void {
+    const color = this.staticPanelColors[panelIndex];
+    const preview = document.querySelector(`.static-panel-header[data-panel="${panelIndex}"] .static-panel-preview`) as HTMLElement;
+
+    if (preview && color) {
+      const displayColor = this.getDisplayColorForPreview(color);
+      preview.style.background = displayColor;
+    }
+  }
+
+  /**
+   * Get static effect parameters
+   */
+  private getStaticParams(): any {
+    const brightnessInput = document.getElementById('static-brightness') as HTMLInputElement;
+    const brightness = parseInt(brightnessInput?.value || '100') / 100;
+
+    return {
+      panelColors: this.staticPanelColors,
+      brightness
+    };
   }
 
   // ===== GRADIENT EDITOR =====
@@ -1215,9 +1534,211 @@ export class SimulatorUI {
    * Set UI parameters for an effect
    */
   private setEffectParameters(effect: EffectType, params: any): void {
-    // Implementation depends on effect type - set all input values
-    // This is simplified for now
-    console.log(`Loading parameters for ${effect}:`, params);
+    // Restore parameters for the given effect type
+    console.log(`🔧 Loading parameters for ${effect}:`, params);
+
+    // Special handling for flow effect with custom gradient
+    if (effect === 'flow' && params.customGradient) {
+      console.log('🎨 Restoring flow custom gradient:', params.customGradient);
+
+      // Restore gradient state
+      this.gradientColorSpace = params.customGradient.colorSpace || 'rgb';
+      this.gradientStops = params.customGradient.stops || [];
+      console.log('📊 Gradient stops restored:', this.gradientStops.length, 'stops');
+
+      // Apply the gradient to the color manager
+      this.applyCustomGradient('flow-custom');
+
+      // Set the preset selector to 'custom'
+      const presetSelect = document.getElementById('flow-preset') as HTMLSelectElement;
+      if (presetSelect) {
+        console.log('✅ Setting preset selector to custom');
+        presetSelect.value = 'custom';
+        // Trigger change event to show the custom gradient section
+        presetSelect.dispatchEvent(new Event('change'));
+      } else {
+        console.warn('⚠️ Could not find flow-preset selector');
+      }
+
+      // Show the gradient editor (redundant with event but ensures it's visible)
+      const customGradientSection = document.getElementById('flow-custom-group');
+      if (customGradientSection) {
+        console.log('✅ Showing custom gradient section');
+        customGradientSection.style.display = 'block';
+      } else {
+        console.warn('⚠️ Could not find flow-custom-group section');
+      }
+
+      // Re-render gradient stops in the UI
+      console.log('🔄 Re-rendering gradient stops UI');
+      this.renderGradientStops('flow');
+
+      // Set the color space selector
+      const colorSpaceSelect = document.getElementById('flow-colorspace') as HTMLSelectElement;
+      if (colorSpaceSelect) {
+        colorSpaceSelect.value = this.gradientColorSpace;
+        console.log('✅ Set color space to:', this.gradientColorSpace);
+      } else {
+        console.warn('⚠️ Could not find flow-colorspace selector');
+      }
+    }
+
+    // Restore flow effect parameters (speed, scale, brightness)
+    if (effect === 'flow') {
+      if (params.speed !== undefined) {
+        const speedInput = document.getElementById('flow-speed') as HTMLInputElement;
+        const speedValue = document.getElementById('flow-speed-value');
+        if (speedInput) {
+          speedInput.value = params.speed.toString();
+          if (speedValue) speedValue.textContent = params.speed.toFixed(1);
+          console.log('✅ Set speed to:', params.speed);
+        }
+      }
+
+      if (params.scale !== undefined) {
+        const scaleInput = document.getElementById('flow-scale') as HTMLInputElement;
+        const scaleValue = document.getElementById('flow-scale-value');
+        if (scaleInput) {
+          scaleInput.value = params.scale.toString();
+          if (scaleValue) scaleValue.textContent = params.scale.toFixed(2);
+          console.log('✅ Set scale to:', params.scale);
+        }
+      }
+
+      if (params.brightness !== undefined) {
+        const brightnessInput = document.getElementById('flow-brightness') as HTMLInputElement;
+        const brightnessValue = document.getElementById('flow-brightness-value');
+        if (brightnessInput) {
+          const brightnessPercent = Math.round(params.brightness * 100);
+          brightnessInput.value = brightnessPercent.toString();
+          if (brightnessValue) brightnessValue.textContent = `${brightnessPercent}%`;
+          console.log('✅ Set brightness to:', brightnessPercent + '%');
+        }
+      }
+    }
+
+    // Special handling for solid effect with custom color
+    if (effect === 'solid' && params.customColor) {
+      // Apply the custom color to the color manager
+      this.client.addPreset('custom', {
+        type: 'solid',
+        solid: params.customColor
+      });
+
+      // Set the preset selector to 'custom'
+      const presetSelect = document.getElementById('solid-preset') as HTMLSelectElement;
+      if (presetSelect) {
+        presetSelect.value = 'custom';
+      }
+
+      // Show the custom color group
+      const customGroup = document.getElementById('solid-custom-group');
+      if (customGroup) {
+        customGroup.style.display = 'block';
+      }
+
+      // Restore UI values
+      const rgbInput = document.getElementById('solid-rgb-color') as HTMLInputElement;
+      const coolInput = document.getElementById('solid-cool') as HTMLInputElement;
+      const warmInput = document.getElementById('solid-warm') as HTMLInputElement;
+
+      if (rgbInput) {
+        rgbInput.value = this.rgbToHex(params.customColor.r, params.customColor.g, params.customColor.b);
+      }
+      if (coolInput) {
+        coolInput.value = params.customColor.cool.toString();
+        const coolValue = document.getElementById('solid-cool-value');
+        if (coolValue) coolValue.textContent = params.customColor.cool.toString();
+      }
+      if (warmInput) {
+        warmInput.value = params.customColor.warm.toString();
+        const warmValue = document.getElementById('solid-warm-value');
+        if (warmValue) warmValue.textContent = params.customColor.warm.toString();
+      }
+    }
+
+    // Special handling for sequential effect with custom color
+    if (effect === 'sequential' && params.customColor) {
+      // Apply the custom color to the color manager
+      this.client.addPreset('sequential-custom', {
+        type: 'solid',
+        solid: params.customColor
+      });
+
+      // Set the preset selector to 'custom'
+      const presetSelect = document.getElementById('sequential-preset') as HTMLSelectElement;
+      if (presetSelect) {
+        presetSelect.value = 'custom';
+      }
+
+      // Show the custom color group
+      const customGroup = document.getElementById('sequential-custom-group');
+      if (customGroup) {
+        customGroup.style.display = 'block';
+      }
+
+      // Restore UI values
+      const rgbInput = document.getElementById('sequential-rgb-color') as HTMLInputElement;
+      const coolInput = document.getElementById('sequential-cool') as HTMLInputElement;
+      const warmInput = document.getElementById('sequential-warm') as HTMLInputElement;
+
+      if (rgbInput) {
+        rgbInput.value = this.rgbToHex(params.customColor.r, params.customColor.g, params.customColor.b);
+      }
+      if (coolInput) {
+        coolInput.value = params.customColor.cool.toString();
+        const coolValue = document.getElementById('sequential-cool-value');
+        if (coolValue) coolValue.textContent = params.customColor.cool.toString();
+      }
+      if (warmInput) {
+        warmInput.value = params.customColor.warm.toString();
+        const warmValue = document.getElementById('sequential-warm-value');
+        if (warmValue) warmValue.textContent = params.customColor.warm.toString();
+      }
+    }
+
+    // Special handling for strobe effect with custom color
+    if (effect === 'strobe' && params.customColor) {
+      // Apply the custom color to the color manager
+      this.client.addPreset('strobe-custom', {
+        type: 'solid',
+        solid: params.customColor
+      });
+
+      // Set the preset selector to 'custom'
+      const presetSelect = document.getElementById('strobe-preset') as HTMLSelectElement;
+      if (presetSelect) {
+        presetSelect.value = 'custom';
+      }
+
+      // Show the custom color group
+      const customGroup = document.getElementById('strobe-custom-group');
+      if (customGroup) {
+        customGroup.style.display = 'block';
+      }
+
+      // Restore UI values
+      const rgbInput = document.getElementById('strobe-rgb-color') as HTMLInputElement;
+      const coolInput = document.getElementById('strobe-cool') as HTMLInputElement;
+      const warmInput = document.getElementById('strobe-warm') as HTMLInputElement;
+
+      if (rgbInput) {
+        rgbInput.value = this.rgbToHex(params.customColor.r, params.customColor.g, params.customColor.b);
+      }
+      if (coolInput) {
+        coolInput.value = params.customColor.cool.toString();
+        const coolValue = document.getElementById('strobe-cool-value');
+        if (coolValue) coolValue.textContent = params.customColor.cool.toString();
+      }
+      if (warmInput) {
+        warmInput.value = params.customColor.warm.toString();
+        const warmValue = document.getElementById('strobe-warm-value');
+        if (warmValue) warmValue.textContent = params.customColor.warm.toString();
+      }
+    }
+
+    // TODO: Implement parameter restoration for other effect types if needed
+    // For now, the UI controls will use default values when switching tabs
   }
 
   /**
