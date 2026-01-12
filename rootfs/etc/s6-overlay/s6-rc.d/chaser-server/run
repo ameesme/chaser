@@ -9,6 +9,15 @@ bashio::log.info "Starting Chaser DMX server..."
 export CONFIG_PATH=/data/config.json
 export PRESETS_PATH=/data/presets.json
 
+# Read MQTT credentials from S6 environment (written by init script)
+if [ -f /var/run/s6/container_environment/MQTT_HOST ]; then
+    export MQTT_HOST=$(cat /var/run/s6/container_environment/MQTT_HOST)
+    export MQTT_PORT=$(cat /var/run/s6/container_environment/MQTT_PORT)
+    export MQTT_USERNAME=$(cat /var/run/s6/container_environment/MQTT_USERNAME)
+    export MQTT_PASSWORD=$(cat /var/run/s6/container_environment/MQTT_PASSWORD)
+    bashio::log.info "MQTT credentials loaded: ${MQTT_HOST}:${MQTT_PORT}"
+fi
+
 # Change to app directory
 cd /app || bashio::exit.nok "Could not change to /app directory"
 
