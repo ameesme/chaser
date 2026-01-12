@@ -1,5 +1,5 @@
 name: Chaser DMX
-version: "0.1.1"
+version: "0.1.2"
 slug: chaser-dmx
 description: DMX LED Panel Effect Engine with MQTT and Art-Net support
 url: https://github.com/ameesme/chaser
