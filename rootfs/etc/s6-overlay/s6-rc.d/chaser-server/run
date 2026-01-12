@@ -9,17 +9,27 @@ bashio::log.info "Starting Chaser DMX server..."
 export CONFIG_PATH=/data/config.json
 export PRESETS_PATH=/data/presets.json
 
+# Debug: Check if env files exist
+bashio::log.info "Checking for MQTT env files..."
+if [ -d /var/run/s6/container_environment ]; then
+    bashio::log.info "Environment directory exists"
+    ls -la /var/run/s6/container_environment/ || true
+fi
+
 # Read MQTT credentials from S6 environment (written by init script)
 if [ -f /var/run/s6/container_environment/MQTT_HOST ]; then
     export MQTT_HOST=$(cat /var/run/s6/container_environment/MQTT_HOST)
     export MQTT_PORT=$(cat /var/run/s6/container_environment/MQTT_PORT)
     export MQTT_USERNAME=$(cat /var/run/s6/container_environment/MQTT_USERNAME)
     export MQTT_PASSWORD=$(cat /var/run/s6/container_environment/MQTT_PASSWORD)
-    bashio::log.info "MQTT credentials loaded: ${MQTT_HOST}:${MQTT_PORT}"
+    bashio::log.info "✅ MQTT credentials loaded: ${MQTT_HOST}:${MQTT_PORT}"
+else
+    bashio::log.warning "⚠️ MQTT environment files not found"
 fi
 
 # Change to app directory
 cd /app || bashio::exit.nok "Could not change to /app directory"
 
 # Start the server
+bashio::log.info "Starting Node.js server..."
 exec node packages/server/dist/index.js
