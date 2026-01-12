@@ -6,7 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
-  publicDir: resolve(__dirname, '../../'), // Serve files from project root (including config.json)
+  base: process.env.INGRESS_PATH || '/', // Support for Home Assistant ingress
+  publicDir: false, // Disable copying public dir to avoid including node_modules
   build: {
     outDir: 'dist',
     emptyOutDir: true

@@ -1,0 +1,16 @@
+#!/command/with-contenv bashio
+# ==============================================================================
+# Start Chaser DMX server
+# ==============================================================================
+
+bashio::log.info "Starting Chaser DMX server..."
+
+# Set config paths
+export CONFIG_PATH=/data/config.json
+export PRESETS_PATH=/data/presets.json
+
+# Change to app directory
+cd /app || bashio::exit.nok "Could not change to /app directory"
+
+# Start the server
+exec node packages/server/dist/index.js

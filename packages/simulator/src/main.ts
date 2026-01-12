@@ -9,8 +9,19 @@ async function main() {
   // Load config
   const config = await loadConfig();
 
-  // Create WebSocket client
-  const serverUrl = `ws://localhost:${config.server?.port || 3001}`;
+  // Create WebSocket client with ingress support
+  const isIngress = window.location.pathname.includes('/api/hassio_ingress/');
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
+  let serverUrl: string;
+  if (isIngress) {
+    // In ingress mode, connect to the same host but on port 3001
+    serverUrl = `${wsProtocol}//${window.location.hostname}:3001`;
+  } else {
+    // Development mode, connect to localhost
+    serverUrl = `ws://localhost:${config.server?.port || 3001}`;
+  }
+
   const client = new WebSocketClient(serverUrl);
 
   // Setup canvas renderer

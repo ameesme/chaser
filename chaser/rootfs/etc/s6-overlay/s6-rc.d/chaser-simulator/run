@@ -1,0 +1,12 @@
+#!/command/with-contenv bashio
+# ==============================================================================
+# Start Chaser DMX simulator
+# ==============================================================================
+
+bashio::log.info "Starting Chaser DMX simulator..."
+
+# Change to simulator directory
+cd /app/packages/simulator/dist || bashio::exit.nok "Could not change to simulator directory"
+
+# Start the simulator UI using serve
+exec serve -s . -l 3000 --no-clipboard

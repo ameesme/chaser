@@ -1,0 +1,49 @@
+name: Chaser DMX
+version: "0.1.0"
+slug: chaser-dmx
+description: DMX LED Panel Effect Engine with MQTT and Art-Net support
+url: https://github.com/yourusername/chaser
+arch:
+  - aarch64
+  - amd64
+init: false
+startup: application
+boot: auto
+ingress: true
+ingress_port: 3000
+ingress_entry: /
+panel_icon: mdi:led-strip-variant
+ports:
+  3001/tcp: 3001
+map:
+  - data:rw
+services:
+  - mqtt:need
+options:
+  artnet_enabled: false
+  artnet_host: "192.168.1.100"
+  artnet_port: 6454
+  artnet_universe: 0
+  artnet_subnet: 0
+  artnet_net: 0
+  artnet_start_channel: 1
+  artnet_channels_per_panel: 5
+  artnet_refresh_rate: 44
+  engine_columns: 2
+  engine_rows_per_column: 7
+  engine_target_fps: 60
+  engine_initial_topology: "circular"
+schema:
+  artnet_enabled: bool
+  artnet_host: str
+  artnet_port: port
+  artnet_universe: int(0,255)
+  artnet_subnet: int(0,15)
+  artnet_net: int(0,127)
+  artnet_start_channel: int(1,512)
+  artnet_channels_per_panel: int(3,10)
+  artnet_refresh_rate: int(1,60)
+  engine_columns: int(1,10)
+  engine_rows_per_column: int(1,20)
+  engine_target_fps: int(30,120)
+  engine_initial_topology: list(linear|circular)

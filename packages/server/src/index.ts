@@ -10,8 +10,8 @@ import { MQTTBridge, type MQTTConfig } from '@chaser/homeassistant';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Load configuration
-const configPath = resolve(__dirname, '../../../config.json');
+// Load configuration (use CONFIG_PATH env var if set, for HA add-on support)
+const configPath = process.env.CONFIG_PATH || resolve(__dirname, '../../../config.json');
 const fullConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
 const config: EngineConfig = {
   columns: fullConfig.engine.columns,
@@ -81,8 +81,8 @@ class ChaserServer {
       }
     }
 
-    // Initialize PresetManager
-    const presetsPath = resolve(__dirname, '../../../presets.json');
+    // Initialize PresetManager (use PRESETS_PATH env var if set, for HA add-on support)
+    const presetsPath = process.env.PRESETS_PATH || resolve(__dirname, '../../../presets.json');
     this.presetManager = new PresetManager(presetsPath);
 
     // Create WebSocket server
@@ -92,13 +92,14 @@ class ChaserServer {
 
     // Initialize MQTT Bridge for Home Assistant if configured
     if (fullConfig.mqtt?.enabled) {
+      // Override MQTT config with env vars from supervisor API (HA add-on support)
       const mqttConfig: MQTTConfig = {
         enabled: fullConfig.mqtt.enabled,
         broker: {
-          host: fullConfig.mqtt.broker?.host || 'localhost',
-          port: fullConfig.mqtt.broker?.port || 1883,
-          username: fullConfig.mqtt.broker?.username,
-          password: fullConfig.mqtt.broker?.password,
+          host: process.env.MQTT_HOST || fullConfig.mqtt.broker?.host || 'localhost',
+          port: parseInt(process.env.MQTT_PORT || '') || fullConfig.mqtt.broker?.port || 1883,
+          username: process.env.MQTT_USERNAME || fullConfig.mqtt.broker?.username,
+          password: process.env.MQTT_PASSWORD || fullConfig.mqtt.broker?.password,
           clientId: fullConfig.mqtt.broker?.clientId || 'chaser-dmx'
         },
         homeassistant: {
