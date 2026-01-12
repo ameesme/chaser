@@ -8,18 +8,18 @@ bashio::log.info "Generating configuration..."
 # Get MQTT credentials from Home Assistant Supervisor
 bashio::log.info "Fetching MQTT credentials from supervisor..."
 if bashio::services.available "mqtt"; then
-    MQTT_HOST=$(bashio::services "mqtt" "host")
-    MQTT_PORT=$(bashio::services "mqtt" "port")
-    MQTT_USERNAME=$(bashio::services "mqtt" "username")
-    MQTT_PASSWORD=$(bashio::services "mqtt" "password")
+    export MQTT_HOST=$(bashio::services "mqtt" "host")
+    export MQTT_PORT=$(bashio::services "mqtt" "port")
+    export MQTT_USERNAME=$(bashio::services "mqtt" "username")
+    export MQTT_PASSWORD=$(bashio::services "mqtt" "password")
 
     bashio::log.info "MQTT service found at ${MQTT_HOST}:${MQTT_PORT}"
 
-    # Export as environment variables for server
-    export MQTT_HOST
-    export MQTT_PORT
-    export MQTT_USERNAME
-    export MQTT_PASSWORD
+    # Write to S6 environment so services can access them
+    echo "${MQTT_HOST}" > /var/run/s6/container_environment/MQTT_HOST
+    echo "${MQTT_PORT}" > /var/run/s6/container_environment/MQTT_PORT
+    echo "${MQTT_USERNAME}" > /var/run/s6/container_environment/MQTT_USERNAME
+    echo "${MQTT_PASSWORD}" > /var/run/s6/container_environment/MQTT_PASSWORD
 else
     bashio::log.warning "MQTT service not available, will use default config"
 fi
