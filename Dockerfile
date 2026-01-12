@@ -7,14 +7,13 @@ RUN apk add --no-cache python3 make g++
 # Install pnpm
 RUN npm install -g pnpm@9.15.0
 
-# Copy entire monorepo
+# Copy monorepo files
 WORKDIR /build
-COPY ../ ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json config.json presets.json ./
+COPY packages ./packages
 
 # Install dependencies and build
-# Note: Remove node_modules to ensure clean install for target architecture
-RUN rm -rf node_modules packages/*/node_modules
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --frozen-lockfile
 RUN pnpm build
 
 # Stage 2: Runtime
@@ -57,8 +56,8 @@ COPY --from=builder /build/packages/simulator/package.json ./packages/simulator/
 COPY --from=builder /build/config.json ./config.json.template
 COPY --from=builder /build/presets.json ./presets.json.template
 
-# Copy rootfs (relative to build context which is parent directory)
-COPY chaser/rootfs /
+# Copy rootfs
+COPY rootfs /
 
 # Build arguments
 ARG BUILD_ARCH

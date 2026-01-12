@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+packages/*/node_modules
+.pnpm-store
+
+# Build outputs
+dist
+packages/*/dist
+.turbo
+
+# Development
+.git
+.github
+*.log
+.env
+.env.*
+
+# Documentation
+docs
+*.md
+!README.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Home Assistant specific
+BUILD_SUCCESS.md
+HAOS_ADDON_STATUS.md
+homeassistant-dashboard.yaml

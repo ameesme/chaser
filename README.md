@@ -1,164 +1,91 @@
-# CHASER.DMX
+# Chaser DMX - Home Assistant Add-on
 
-A real-time DMX LED panel effect engine with WebSocket-based architecture and retro-styled web simulator.
+A real-time DMX LED panel effect engine with MQTT integration for Home Assistant.
 
-![Chaser Interface](./docs/assets/chaser-demo.gif)
+![Supports aarch64 Architecture][aarch64-shield] ![Supports amd64 Architecture][amd64-shield]
 
-## Overview
+## About
 
-Chaser is a modular DMX lighting control system designed for managing RGBCCT LED panels. It features a powerful effect engine, WebSocket-based client-server architecture, and a retro black-and-white web interface for creating and previewing lighting effects in real-time.
-
-## Architecture
-
-```
-┌─────────────────┐       WebSocket        ┌──────────────────┐
-│   Simulator     │ ◄──────────────────► │     Server       │
-│   (Web UI)      │                        │  (Effect Engine) │
-└─────────────────┘                        └──────────────────┘
-                                                     │
-                                           ┌─────────┴──────────┐
-                                           │                    │
-                                      ┌────▼────┐         ┌────▼────┐
-                                      │  Core   │         │  Types  │
-                                      │ Effects │         │  Shared │
-                                      └─────────┘         └─────────┘
-```
-
-### Packages
-
-- **@chaser/core** - Effect engine, color management, and topology system
-- **@chaser/server** - WebSocket server and effect orchestration
-- **@chaser/simulator** - Web-based UI and canvas renderer
-- **@chaser/types** - Shared TypeScript types
+Chaser DMX is a powerful effect engine designed for controlling RGBCCT LED panels via DMX/Art-Net. This add-on integrates seamlessly with Home Assistant through MQTT, exposing individual panel controls and preset effects.
 
 ## Features
 
-### Effects
+- **MQTT Auto-Configuration**: Automatically connects to Home Assistant's MQTT broker
+- **Web Interface**: Retro-styled simulator UI accessible via Home Assistant Ingress
+- **Art-Net DMX Output**: Control physical LED panels via DMX over Ethernet
+- **14 RGBCCT Light Entities**: Individual control of each panel
+- **Effect Presets**: Pre-configured lighting effects accessible as Home Assistant buttons
+- **Real-time Effects**: Flow, strobe, sequential fade, and more at 60 FPS
 
-- **Solid Color** - Static color with fade transitions
-- **Sequential Fade** - Panel-by-panel color transitions with customizable delay
-- **Flow** - Animated gradients with direction control
-- **Strobe** - Configurable frequency strobing
-- **Blackout** - Instant or faded blackout
+## Installation
 
-### Color System
+1. Add this repository to your Home Assistant add-on store
+2. Install the "Chaser DMX" add-on
+3. Start the add-on
+4. Access the web interface via Home Assistant's sidebar
 
-- Full RGBCCT color support (RGB + Cool/Warm white)
-- Built-in color presets (white, warm white, rainbow, ocean, sunset, fire)
-- Custom gradient editor with HSV/RGB color space interpolation
-- Real-time gradient preview
+## Configuration
 
-### Topology Modes
+### Engine Settings
 
-- **Circular** - Panels arranged in a circle
-- **Linear** - Panels in a straight line
-- **Singular** - All panels as a single unit
+- **engine_columns**: Number of panel columns (default: 2)
+- **engine_rows_per_column**: Number of panels per column (default: 7)
+- **engine_target_fps**: Effect update rate (default: 60)
+- **engine_initial_topology**: Panel arrangement - `circular` or `linear` (default: circular)
 
-### UI Features
+### Art-Net/DMX Settings
 
-- Retro black-and-white interface with IBM Plex Mono font
-- Tab-based effect selection
-- Real-time parameter adjustment
-- Preset bank for one-tap effect triggering
-- Live canvas preview with 60 FPS rendering
-- Save and load custom effect configurations
+- **artnet_enabled**: Enable Art-Net DMX output (default: false)
+- **artnet_host**: IP address of Art-Net node (default: 192.168.1.100)
+- **artnet_port**: Art-Net port (default: 6454)
+- **artnet_universe**: DMX universe 0-255 (default: 0)
+- **artnet_subnet**: Art-Net subnet 0-15 (default: 0)
+- **artnet_net**: Art-Net net 0-127 (default: 0)
+- **artnet_start_channel**: First DMX channel (default: 1)
+- **artnet_channels_per_panel**: Channels per panel (default: 5 for RGBCCT)
+- **artnet_refresh_rate**: DMX update rate in Hz (default: 44)
 
-## Getting Started
+### Example Configuration
 
-### Prerequisites
-
-- Node.js >= 18.0.0
-- pnpm >= 9.0.0
-
-### Installation
-
-```bash
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm build
+```yaml
+artnet_enabled: true
+artnet_host: "192.168.1.100"
+engine_columns: 2
+engine_rows_per_column: 7
+engine_target_fps: 60
+engine_initial_topology: "circular"
 ```
 
-### Development
+## Usage
 
-Run the simulator and server in parallel:
+### Home Assistant Integration
 
-```bash
-pnpm dev
-```
+After starting the add-on, you'll find:
 
-Or run them separately:
+**Lights** (in Home Assistant):
+- `light.panel_0` through `light.panel_13` - Individual RGBWW panel controls
+- Each light supports brightness and color control
 
-```bash
-# Terminal 1: Start the server
-pnpm server
+**Buttons** (in Home Assistant):
+- Preset effect buttons for one-tap activation
 
-# Terminal 2: Start the simulator UI
-pnpm sim
-```
+### Web Interface
 
-The simulator will be available at `http://localhost:3000`
+Access the simulator UI through Home Assistant's sidebar:
+- Visual preview of panel states
+- Create and manage effect presets
+- Real-time effect parameter adjustment
 
-### Configuration
+### Creating Effects
 
-Configuration is loaded from `config.json` in the root directory. Example:
+1. Open the web interface
+2. Select an effect type (SOLID, FLOW, SEQUENTIAL, STROBE, BLACKOUT)
+3. Adjust parameters
+4. Click "SAVE AS PRESET" to make it available in Home Assistant
 
-```json
-{
-  "engine": {
-    "targetFPS": 60,
-    "columns": 2,
-    "rowsPerColumn": 7,
-    "initialTopology": "circular"
-  },
-  "server": {
-    "port": 3001
-  },
-  "simulator": {
-    "port": 3000,
-    "panelScale": 1
-  },
-  "artnet": {
-    "enabled": true,
-    "host": "192.168.1.100",
-    "port": 6454,
-    "universe": 0,
-    "subnet": 0,
-    "net": 0,
-    "startChannel": 1,
-    "channelsPerPanel": 5,
-    "refreshRate": 44
-  },
-  "presets": {
-    "white": {
-      "type": "solid",
-      "solid": { "r": 255, "g": 255, "b": 255, "cool": 255, "warm": 0 }
-    }
-  }
-}
-```
+## DMX Channel Mapping
 
-### Art-Net DMX Output
-
-Chaser supports real-time DMX output via the Art-Net protocol (DMX over Ethernet). This allows you to control physical RGBCCT LED panels.
-
-#### Configuration Options
-
-- **enabled** - Enable/disable Art-Net output (default: `false`)
-- **host** - IP address of Art-Net node or `255.255.255.255` for broadcast
-- **port** - Art-Net port (default: `6454`)
-- **universe** - Art-Net universe 0-15 (default: `0`)
-- **subnet** - Art-Net subnet 0-15 (default: `0`)
-- **net** - Art-Net net 0-127 (default: `0`)
-- **startChannel** - First DMX channel for panel data (1-512, default: `1`)
-- **channelsPerPanel** - DMX channels per panel (default: `5` for RGBCCT)
-- **refreshRate** - Packet refresh rate in Hz (default: `44`)
-
-#### DMX Channel Mapping
-
-Each panel uses 5 consecutive DMX channels in RGBCCT order:
-
+Each panel uses 5 consecutive DMX channels:
 - Channel 1: Red (0-255)
 - Channel 2: Green (0-255)
 - Channel 3: Blue (0-255)
@@ -171,163 +98,14 @@ For 14 panels starting at channel 1:
 - Panel 2: Channels 11-15
 - ... and so on
 
-#### Setting Up Art-Net
+## Support
 
-1. Connect your computer to the same network as your Art-Net node
-2. Update `config.json` with your Art-Net node's IP address
-3. Set `enabled: true` in the Art-Net configuration
-4. Start the server: `pnpm server`
-5. Effects will now output to both the web simulator and DMX hardware
-
-## Usage
-
-### Creating Effects
-
-1. Select an effect tab (SOLID, SEQUENTIAL, FLOW, STROBE, BLACKOUT)
-2. Adjust parameters using sliders and controls
-3. Choose a topology mode
-4. Click "RUN EFFECT" to preview
-5. Click "SAVE AS PRESET" to save the configuration
-
-### Using Presets
-
-Saved presets appear as square pads in the preset bank at the bottom of the interface. Click any preset to instantly load and run that effect configuration.
-
-#### Server-Side Preset Storage
-
-Effect presets are stored server-side in `presets.json` (project root), making them available across devices and sessions:
-
-**Creating Presets:**
-1. Configure your desired effect parameters
-2. Click "SAVE AS PRESET"
-3. Enter a unique ID (e.g., `my-cool-effect`) and display name
-4. IDs are automatically sanitized: lowercase, spaces→hyphens, alphanumeric only
-
-**Managing Presets:**
-- **Load**: Click any preset pad to execute it
-- **Delete**: Right-click on user presets (protected defaults cannot be deleted)
-- **Protected Presets**: 7 built-in presets marked with "(PROTECTED)" are permanent
-
-**Backup/Restore:**
-- Presets file: `/presets.json` in project root
-- Simply copy this file to backup or transfer presets
-
-**Running Presets via WebSocket:**
-```typescript
-// Run preset by ID
-{
-  type: 'runEffect',
-  payload: { presetId: 'flow-slow-rainbow' }
-}
-
-// List all presets
-{
-  type: 'listPresets'
-}
-
-// Save new preset
-{
-  type: 'savePreset',
-  payload: {
-    id: 'my-preset',
-    name: 'My Custom Effect',
-    effect: 'flow',
-    topology: 'linear',
-    params: { colorPreset: 'rainbow', speed: 0.5, scale: 0.3, brightness: 1 }
-  }
-}
-
-// Delete preset
-{
-  type: 'deletePreset',
-  payload: { id: 'my-preset' }
-}
-```
-
-### Custom Gradients
-
-For Flow effects:
-
-1. Select "Custom Gradient" from the preset dropdown
-2. Choose color space (RGB or HSV)
-3. Add gradient stops with the "ADD STOP" button
-4. Adjust position and color for each stop
-5. Control speed and scale for animation
-
-## API
-
-### WebSocket Protocol
-
-The server exposes a WebSocket API on port 3001:
-
-#### Client → Server
-
-```typescript
-// Run an effect
-{
-  type: 'run_effect',
-  payload: {
-    effectName: 'solid',
-    params: { colorPreset: 'white', brightness: 1.0 }
-  }
-}
-
-// Set topology
-{
-  type: 'set_topology',
-  payload: { topology: 'circular' }
-}
-
-// Add color preset
-{
-  type: 'add_preset',
-  payload: {
-    name: 'custom',
-    preset: {
-      type: 'solid',
-      solid: { r: 255, g: 0, b: 0, cool: 0, warm: 0 }
-    }
-  }
-}
-```
-
-#### Server → Client
-
-```typescript
-// State update (60 FPS)
-{
-  type: 'state_update',
-  payload: {
-    panels: [...],  // Array of panel states
-    currentEffect: 'flow'
-  }
-}
-```
-
-## Testing
-
-```bash
-# Run all tests
-pnpm test
-
-# Run tests for a specific package
-pnpm --filter @chaser/core test
-```
-
-## Project Structure
-
-```
-chaser/
-├── packages/
-│   ├── core/          # Effect engine and color system
-│   ├── server/        # WebSocket server
-│   ├── simulator/     # Web UI and renderer
-│   └── types/         # Shared TypeScript types
-├── config.json        # Configuration
-├── package.json       # Root package config
-└── turbo.json         # Turborepo config
-```
+For issues and feature requests, please visit:
+https://github.com/yourusername/chaser
 
 ## License
 
 MIT
+
+[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
+[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
