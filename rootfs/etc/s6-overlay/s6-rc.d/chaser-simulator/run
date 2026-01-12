@@ -8,5 +8,5 @@ bashio::log.info "Starting Chaser DMX simulator..."
 # Change to simulator directory
 cd /app/packages/simulator/dist || bashio::exit.nok "Could not change to simulator directory"
 
-# Start the simulator UI using serve
-exec serve -s . -l 3000 --no-clipboard
+# Start the simulator UI using serve (bind to 0.0.0.0 for ingress access)
+exec serve -s . -l tcp://0.0.0.0:3000 --no-clipboard
