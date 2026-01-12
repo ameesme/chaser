@@ -1,0 +1,20 @@
+{
+  "name": "@chaser/homeassistant",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "mqtt": "^5.3.5",
+    "ws": "^8.16.0",
+    "@chaser/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/ws": "^8.5.10"
+  }
+}

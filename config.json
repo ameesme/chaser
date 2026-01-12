@@ -300,5 +300,22 @@
     "startChannel": 1,
     "channelsPerPanel": 5,
     "refreshRate": 44
+  },
+  "mqtt": {
+    "enabled": true,
+    "broker": {
+      "host": "192.168.50.81",
+      "port": 1883,
+      "username": "chaser",
+      "password": "ULrXZdhqAxRvXw2ERbwh",
+      "clientId": "chaser-dmx"
+    },
+    "homeassistant": {
+      "discoveryPrefix": "homeassistant",
+      "topicPrefix": "chaser",
+      "retainDiscovery": true
+    },
+    "stateUpdateRate": 200,
+    "reconnectInterval": 5000
   }
 }

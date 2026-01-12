@@ -1,0 +1,210 @@
+# Home Assistant Dashboard Configuration for Chaser DMX LED Panels
+# Copy this YAML into your Home Assistant Lovelace dashboard
+
+title: Chaser DMX Panels
+views:
+  - title: LED Panels
+    path: led-panels
+    icon: mdi:led-strip-variant
+    cards:
+      # Main Panel Grid (2 columns × 7 rows)
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          # Column 1 (Panels 0-6)
+          - type: light
+            entity: light.panel_0
+            name: Panel 0
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_7
+            name: Panel 7
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_1
+            name: Panel 1
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_8
+            name: Panel 8
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_2
+            name: Panel 2
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_9
+            name: Panel 9
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_3
+            name: Panel 3
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_10
+            name: Panel 10
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_4
+            name: Panel 4
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_11
+            name: Panel 11
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_5
+            name: Panel 5
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_12
+            name: Panel 12
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_6
+            name: Panel 6
+            icon: mdi:lightbulb
+
+          - type: light
+            entity: light.panel_13
+            name: Panel 13
+            icon: mdi:lightbulb
+
+      # Preset Buttons Section
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: |
+              ## Effect Presets
+              Trigger saved effect presets
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              # These will auto-populate based on your presets.json
+              # Add button entities as they appear in HA
+              # Example format:
+              # - type: button
+              #   entity: button.preset_flow_rainbow
+              #   name: Flow Rainbow
+              #   icon: mdi:waves
+
+      # Master Controls
+      - type: entities
+        title: Master Controls
+        entities:
+          - entity: light.panel_0
+            type: custom:slider-entity-row
+            name: All Panels
+            icon: mdi:lightbulb-group
+          - type: divider
+          - entity: sensor.chaser_dmx_status
+            name: System Status
+            icon: mdi:server
+
+      # Color Presets (Quick Access)
+      - type: horizontal-stack
+        cards:
+          - type: button
+            name: All White
+            icon: mdi:lightbulb-on
+            tap_action:
+              action: call-service
+              service: light.turn_on
+              target:
+                entity_id:
+                  - light.panel_0
+                  - light.panel_1
+                  - light.panel_2
+                  - light.panel_3
+                  - light.panel_4
+                  - light.panel_5
+                  - light.panel_6
+                  - light.panel_7
+                  - light.panel_8
+                  - light.panel_9
+                  - light.panel_10
+                  - light.panel_11
+                  - light.panel_12
+                  - light.panel_13
+              data:
+                rgbww_color: [0, 0, 0, 255, 0]
+                brightness: 255
+
+          - type: button
+            name: All Off
+            icon: mdi:lightbulb-off
+            tap_action:
+              action: call-service
+              service: light.turn_off
+              target:
+                entity_id:
+                  - light.panel_0
+                  - light.panel_1
+                  - light.panel_2
+                  - light.panel_3
+                  - light.panel_4
+                  - light.panel_5
+                  - light.panel_6
+                  - light.panel_7
+                  - light.panel_8
+                  - light.panel_9
+                  - light.panel_10
+                  - light.panel_11
+                  - light.panel_12
+                  - light.panel_13
+
+# Alternative: Compact Panel View
+  - title: Compact View
+    path: compact-view
+    icon: mdi:view-grid
+    cards:
+      - type: glance
+        title: LED Panel Grid
+        columns: 2
+        show_name: true
+        show_state: false
+        entities:
+          # Column 1
+          - entity: light.panel_0
+            name: "0"
+          - entity: light.panel_7
+            name: "7"
+          - entity: light.panel_1
+            name: "1"
+          - entity: light.panel_8
+            name: "8"
+          - entity: light.panel_2
+            name: "2"
+          - entity: light.panel_9
+            name: "9"
+          - entity: light.panel_3
+            name: "3"
+          - entity: light.panel_10
+            name: "10"
+          - entity: light.panel_4
+            name: "4"
+          - entity: light.panel_11
+            name: "11"
+          - entity: light.panel_5
+            name: "5"
+          - entity: light.panel_12
+            name: "12"
+          - entity: light.panel_6
+            name: "6"
+          - entity: light.panel_13
+            name: "13"

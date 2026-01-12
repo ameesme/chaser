@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@chaser/core": "workspace:*",
+    "@chaser/homeassistant": "workspace:*",
     "@chaser/types": "workspace:*",
     "artnet-protocol": "^0.2.1",
     "ws": "^8.18.0"

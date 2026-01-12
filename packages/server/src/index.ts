@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import type { EngineConfig } from '@chaser/types';
 import { ArtNetOutput, type ArtNetConfig } from './DMXOutput.js';
 import { PresetManager } from './PresetManager.js';
+import { MQTTBridge, type MQTTConfig } from '@chaser/homeassistant';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -45,6 +46,7 @@ class ChaserServer {
   private fullConfig: any;
   private artnetOutput: ArtNetOutput | null = null;
   private presetManager: PresetManager;
+  private mqttBridge: MQTTBridge | null = null;
 
   constructor(port: number = 3001) {
     // Store full config
@@ -87,6 +89,40 @@ class ChaserServer {
     this.wss = new WebSocketServer({ port });
 
     console.log(`🚀 Chaser WebSocket server running on ws://localhost:${port}`);
+
+    // Initialize MQTT Bridge for Home Assistant if configured
+    if (fullConfig.mqtt?.enabled) {
+      const mqttConfig: MQTTConfig = {
+        enabled: fullConfig.mqtt.enabled,
+        broker: {
+          host: fullConfig.mqtt.broker?.host || 'localhost',
+          port: fullConfig.mqtt.broker?.port || 1883,
+          username: fullConfig.mqtt.broker?.username,
+          password: fullConfig.mqtt.broker?.password,
+          clientId: fullConfig.mqtt.broker?.clientId || 'chaser-dmx'
+        },
+        homeassistant: {
+          discoveryPrefix: fullConfig.mqtt.homeassistant?.discoveryPrefix || 'homeassistant',
+          topicPrefix: fullConfig.mqtt.homeassistant?.topicPrefix || 'chaser',
+          retainDiscovery: fullConfig.mqtt.homeassistant?.retainDiscovery !== false
+        },
+        stateUpdateRate: fullConfig.mqtt.stateUpdateRate || 1000,
+        reconnectInterval: fullConfig.mqtt.reconnectInterval || 5000
+      };
+
+      this.mqttBridge = new MQTTBridge(mqttConfig, `ws://localhost:${port}`);
+
+      // Connect after server is ready
+      setImmediate(async () => {
+        try {
+          await this.mqttBridge?.connect();
+          console.log('🏠 Home Assistant MQTT integration enabled');
+        } catch (error) {
+          console.error('❌ Failed to start MQTT Bridge:', error);
+          this.mqttBridge = null;
+        }
+      });
+    }
 
     // Set up event listeners
     this.wss.on('connection', this.handleConnection.bind(this));
@@ -366,7 +402,7 @@ class ChaserServer {
   /**
    * Cleanup and shutdown
    */
-  public shutdown(): void {
+  public async shutdown(): Promise<void> {
     console.log('🛑 Shutting down server...');
 
     if (this.updateInterval) {
@@ -378,6 +414,11 @@ class ChaserServer {
       this.artnetOutput.close();
     }
 
+    // Disconnect MQTT Bridge
+    if (this.mqttBridge) {
+      await this.mqttBridge.disconnect();
+    }
+
     this.clients.forEach(client => client.close());
     this.wss.close();
   }
@@ -387,12 +428,12 @@ class ChaserServer {
 const server = new ChaserServer(3001);
 
 // Handle graceful shutdown
-process.on('SIGINT', () => {
-  server.shutdown();
+process.on('SIGINT', async () => {
+  await server.shutdown();
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
-  server.shutdown();
+process.on('SIGTERM', async () => {
+  await server.shutdown();
   process.exit(0);
 });
